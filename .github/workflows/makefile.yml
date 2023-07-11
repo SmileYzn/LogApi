@@ -33,11 +33,11 @@ jobs:
     
     - name: Move release file to publish
       run: |
-        # Make Match BOT path
+        # Make Log API Path
         mkdir -p publish/addons/logapi/dlls
 
         # Move released file to dlls
-        mv ./logapi/Release/logapi_mm.so publish/addons/logapi/dlls
+        mv ./LogApi/Release/logapi_mm.so publish/addons/logapi/dlls
 
         # Copy cstrike contents to publish dir
         cp -ar cstrike/. publish
