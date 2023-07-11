@@ -9,7 +9,7 @@ void CLogApi::ServerActivate()
 	this->m_log_api_on = gLogUtil.CvarRegister("log_api_enable", "1");
 
 	// Set Log API Address (API HTTP/s Address Ie. https://api.yoursite.com/)
-	this->m_log_api_address = gLogUtil.CvarRegister("log_api_address", "https://pugbr.net/api.php");
+	this->m_log_api_address = gLogUtil.CvarRegister("log_api_address", "");
 
 	// Set Log API Timeout (Timeout in seconds to wait for response from remote server)
 	this->m_log_api_timeout = gLogUtil.CvarRegister("log_api_timeout", "5.0");
