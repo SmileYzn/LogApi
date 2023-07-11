@@ -21,7 +21,8 @@ And it can get responses from the webserver of what to do on the HLDS side.
 | log_api_bearer   |    -    |    No    | Bearer Token to use with HTTP                              |
 
 ## Enable / Disable events
-To enable what event will be sent to webserver, edit events.json file (The settings will be affected on next server restart)
+To enable what event will be sent to webserver, edit events.json file.
+The settings will be work after server change level or restart.
 
 ```
 {
