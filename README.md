@@ -20,6 +20,22 @@ And it can get responses from the webserver of what to do on the HLDS side.
 | log_api_timeout  |   5.0   |    Yes   | Timeout in seconds to wait for response from remote server |
 | log_api_bearer   |    -    |    No    | Bearer Token to use with HTTP                              |
 
+## Enable / Disable events
+To enable what event will be sent to webserver, edit events.json file (The settings will be affected on next server restart)
+
+```
+{
+	"ServerActivate": 		false,
+	"ServerDeactivate": 		false,
+	"ServerAlertMessage": 		false,
+	"ClientConnect":		false,
+	"ClientPutInServer":		false,
+	"ClientDisconnect":		false,
+	"ClientKill": 			false,
+	"ClientUserInfoChanged": 	false
+}
+```
+
 ## Development Alpha Stage
 Please, consider that plugin is experimental. Any feedback / request is always welcome.
 
