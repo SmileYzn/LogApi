@@ -86,12 +86,16 @@ void CLogCurl::PostJSON(const char* url, long Timeout, std::string BearerToken, 
 
 				curl_easy_setopt(ch, CURLOPT_COPYPOSTFIELDS, PostData.c_str());
 
-				if (!BearerToken.empty())
-				{
-					curl_easy_setopt(ch, CURLOPT_HTTPAUTH, CURLAUTH_BEARER);
+				struct curl_slist* chHeaders = curl_slist_append(NULL, "Content-Type: application/json");
 
-					curl_easy_setopt(ch, CURLOPT_XOAUTH2_BEARER, BearerToken.c_str());
+				if (!BearerToken.empty()) 
+				{
+					std::string AuthorizationHeader = "Authorization: Bearer " + BearerToken;
+
+					chHeaders = curl_slist_append(chHeaders, AuthorizationHeader.c_str());
 				}
+
+				curl_easy_setopt(ch, CURLOPT_HTTPHEADER, chHeaders);
 
 				curl_easy_setopt(ch, CURLOPT_WRITEDATA, (void*)&this->m_Data[this->m_RequestIndex]);
 
