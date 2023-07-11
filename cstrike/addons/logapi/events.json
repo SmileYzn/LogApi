@@ -1,0 +1,10 @@
+{
+	"ServerActivate": 		false,
+	"ServerDeactivate": 		false,
+	"ServerAlertMessage": 		false,
+	"ClientConnect":		false,
+	"ClientPutInServer":		false,
+	"ClientDisconnect":		false,
+	"ClientKill": 			false,
+	"ClientUserInfoChanged": 	false
+}

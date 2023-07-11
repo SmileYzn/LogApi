@@ -1,7 +1,14 @@
 # HLDS Log API
 MetaMod Plugin that uses JSON API to comunicate with WebServer using HTTP/s Protocol.
 
-## What that do
+<p align="center">
+    <a href="https://github.com/SmileYzn/LogApi/issues"><img alt="GitHub Issues" src="https://img.shields.io/github/issues-raw/smileyzn/LogApi?style=flat-square"></a>
+    <a href="https://github.com/SmileYzn/LogApi/actions"><img alt="GitHub Workflow Status" src="https://img.shields.io/github/actions/workflow/status/SmileYzn/LogApi/msbuild.yml?branch=main&label=Windows&style=flat-square"></a>
+    <a href="https://github.com/SmileYzn/LogApi/actions"><img alt="GitHub Workflow Status" src="https://img.shields.io/github/actions/workflow/status/smileyzn/LogApi/makefile.yml?branch=main&label=Linux&style=flat-square"></a>
+    <a href="https://github.com/SmileYzn/LogApi/releases/latest"><img src="https://img.shields.io/github/downloads/SmileYzn/LogApi/total?label=Download%40latest&style=flat-square&logo=github&logoColor=white" alt="Download"></a>
+</p>
+
+## What that plugin do
 The Plugin sends requests to a webserver using JSON format.
 And it can get responses from the webserver of what to do on the HLDS side.
 
@@ -14,3 +21,7 @@ And it can get responses from the webserver of what to do on the HLDS side.
 | log_api_bearer   |    -    |    No    | Bearer Token to use with HTTP                              |
 
 ## Development Alpha Stage
+Please, consider that plugin is experimental. Any feedback / request is always welcome.
+
+## Finally
+A Future documentation how to use it will be provided in this repository.
