@@ -81,6 +81,7 @@
 
 // Log API
 #include "LogApi.h"
+#include "LogCommand.h"
 #include "LogCurl.h"
 #include "LogEvent.h"
 #include "LogUtil.h"

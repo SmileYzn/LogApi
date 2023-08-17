@@ -216,22 +216,25 @@ void CLogEvent::ClientSay(edict_t* pEntity)
 				if (Type[0u] != '\0')
 				{
 					auto Message = g_engfuncs.pfnCmd_Args();
-
-					if (Message[0u] != '\0')
+					
+					if (Message)
 					{
-						if (!Q_stricmp(Type, "say") || !Q_stricmp(Type, "say_team"))
+						if (Message[0u] != '\0')
 						{
-							this->m_Event["Event"] = __func__;
+							if (!Q_stricmp(Type, "say") || !Q_stricmp(Type, "say_team"))
+							{
+								this->m_Event["Event"] = __func__;
 
-							this->m_Event["UserId"] = g_engfuncs.pfnGetPlayerUserId(pEntity);
+								this->m_Event["UserId"] = g_engfuncs.pfnGetPlayerUserId(pEntity);
 
-							this->m_Event["Name"] = STRING(pEntity->v.netname);
+								this->m_Event["Name"] = STRING(pEntity->v.netname);
 
-							this->m_Event["AuthId"] = g_engfuncs.pfnGetPlayerAuthId(pEntity);
+								this->m_Event["AuthId"] = g_engfuncs.pfnGetPlayerAuthId(pEntity);
 
-							this->m_Event["Type"] = Type;
+								this->m_Event["Type"] = Type;
 
-							this->m_Event["Message"] = Message;
+								this->m_Event["Message"] = Message;
+							}
 						}
 					}
 				}

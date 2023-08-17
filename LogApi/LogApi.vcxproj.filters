@@ -34,6 +34,9 @@
     <Filter Include="LogApi\LogEvent">
       <UniqueIdentifier>{32801517-1749-4a74-81ec-4f9de62e08ca}</UniqueIdentifier>
     </Filter>
+    <Filter Include="LogApi\LogCommand">
+      <UniqueIdentifier>{d50e8ce2-2124-4d0b-9222-e7a61271eb9f}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="precompiled.cpp">
@@ -66,6 +69,9 @@
     <ClCompile Include="LogEvent.cpp">
       <Filter>LogApi\LogEvent</Filter>
     </ClCompile>
+    <ClCompile Include="LogCommand.cpp">
+      <Filter>LogApi\LogCommand</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="precompiled.h">
@@ -97,6 +103,9 @@
     </ClInclude>
     <ClInclude Include="LogEvent.h">
       <Filter>LogApi\LogEvent</Filter>
+    </ClInclude>
+    <ClInclude Include="LogCommand.h">
+      <Filter>LogApi\LogCommand</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

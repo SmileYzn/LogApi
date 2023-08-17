@@ -27,27 +27,31 @@ cvar_t* CLogUtil::CvarRegister(const char* Name, const char* Value)
 	return Pointer;
 }
 
-void CLogUtil::ServerExecute(std::string CommandData)
+void CLogUtil::ServerExecute(std::string Command)
 {
-	if (!CommandData.empty())
+	// If is not null
+	if (!Command.empty())
 	{
-		std::ofstream File(LOG_API_TEMP_FILE, std::ofstream::binary);
-
-		if (File)
+		// If is not empty
+		if (Command.length() > 0)
 		{
-			File.write(CommandData.c_str(), CommandData.size());
+			// Add end line character
+			Command += "\n";
+
+			// Dump char array as pointer
+			auto String = Q_strdup(Command.c_str());
+
+			// If is not null
+			if (String)
+			{
+				// If is not empty
+				if (String[0u] != '\0')
+				{
+					// Execute final command
+					g_engfuncs.pfnServerCommand(String);
+				}
+			}
 		}
-
-		File.close();
-	}
-
-	char ExecuteCommand[MAX_PATH] = { 0 };
-
-	Q_snprintf(ExecuteCommand, sizeof(ExecuteCommand), "exec %s\n", LOG_API_TEMP_FILE);
-
-	if(ExecuteCommand[0])
-	{
-		g_engfuncs.pfnServerCommand(ExecuteCommand);
 	}
 }
 
@@ -79,7 +83,7 @@ void CLogUtil::ClientPrint(edict_t* pEntity, int msg_dest, const char* Format, .
 
 	if (iMsgTextMsg || (iMsgTextMsg = gpMetaUtilFuncs->pfnGetUserMsgID(PLID, "TextMsg", NULL)))
 	{
-		if (pEntity)
+		if (pEntity && !FNullEnt(pEntity))
 		{
 			g_engfuncs.pfnMessageBegin(MSG_ONE, iMsgTextMsg, NULL, pEntity);
 		}

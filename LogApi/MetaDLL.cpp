@@ -53,6 +53,8 @@ void DLL_POST_ServerActivate(edict_t* pEdictList, int edictCount, int clientMax)
 
 	gLogCurl.ServerActivate();
 
+	gLogCommand.ServerActivate();
+
 	gLogEvent.ServerActivate(pEdictList, edictCount, clientMax);
 
 	RETURN_META(MRES_IGNORED);
@@ -109,9 +111,15 @@ void DLL_POST_ClientUserInfoChanged(edict_t* pEntity, char* InfoBuffer)
 
 void DLL_POST_ClientCommand(edict_t* pEntity)
 {
-	gLogEvent.ClientCommand(pEntity);
+	if (pEntity)
+	{
+		if (!FNullEnt(pEntity))
+		{
+			gLogEvent.ClientCommand(pEntity);
 
-	gLogEvent.ClientSay(pEntity);
+			gLogEvent.ClientSay(pEntity);
+		}
+	}
 
 	RETURN_META(MRES_IGNORED);
 }

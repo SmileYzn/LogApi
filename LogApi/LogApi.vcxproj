@@ -15,6 +15,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="LogApi.cpp" />
+    <ClCompile Include="LogCommand.cpp" />
     <ClCompile Include="LogCurl.cpp" />
     <ClCompile Include="LogEvent.cpp" />
     <ClCompile Include="LogUtil.cpp" />
@@ -30,6 +31,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="LogApi.h" />
+    <ClInclude Include="LogCommand.h" />
     <ClInclude Include="LogCurl.h" />
     <ClInclude Include="LogEvent.h" />
     <ClInclude Include="LogUtil.h" />

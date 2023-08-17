@@ -129,17 +129,47 @@ void CLogApi::EventResult(int EventIndex, nlohmann::ordered_json Data)
 	// Check if has event result from api
 	if (Data.contains("ServerExecute"))
 	{
-		// Check if event result name is not empty and is string
-		if (Data["ServerExecute"].is_string())
+		// If is not empty
+		if (!Data["ServerExecute"].empty())
 		{
-			// Get Command
-			auto String = Data["ServerExecute"].get<std::string>();
-
-			// If command is not empty
-			if (!String.empty())
+			// Check if event result is string
+			if (Data["ServerExecute"].is_string())
 			{
-				// Execute command
-				gLogUtil.ServerExecute(String);
+				// Get Command
+				auto String = std::string(Data["ServerExecute"]);
+
+				// If command is not empty
+				if (!String.empty())
+				{
+					// Execute command
+					gLogUtil.ServerExecute(String);
+				}
+			}
+			//
+			// Check if event result is array
+			else if (Data["ServerExecute"].is_array())
+			{
+				// Loop commands
+				for (auto it = Data["ServerExecute"].begin(); it != Data["ServerExecute"].end(); ++it)
+				{
+					// If is strimg
+					if (it.value().is_string())
+					{
+						// If is not empty
+						if (!it.value().empty())
+						{
+							// Get string of this command
+							auto String = std::string(it.value());
+
+							// If is not empty
+							if (!String.empty())
+							{
+								// Execute command
+								gLogUtil.ServerExecute(String);
+							}
+						}
+					}
+				}
 			}
 		}
 	}
