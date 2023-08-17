@@ -40,6 +40,8 @@ C_DLLEXPORT int GetEntityAPI2_Post(DLL_FUNCTIONS* pFunctionTable, int* interface
 
 	gDLL_FunctionTable_Post.pfnClientUserInfoChanged = DLL_POST_ClientUserInfoChanged;
 
+	gDLL_FunctionTable_Post.pfnClientCommand = DLL_POST_ClientCommand;
+
 	memcpy(pFunctionTable, &gDLL_FunctionTable_Post, sizeof(DLL_FUNCTIONS));
 
 	return 1;
@@ -101,6 +103,15 @@ void DLL_POST_ClientKill(edict_t* pEntity)
 void DLL_POST_ClientUserInfoChanged(edict_t* pEntity, char* InfoBuffer)
 {
 	gLogEvent.ClientUserInfoChanged(pEntity, InfoBuffer);
+
+	RETURN_META(MRES_IGNORED);
+}
+
+void DLL_POST_ClientCommand(edict_t* pEntity)
+{
+	gLogEvent.ClientCommand(pEntity);
+
+	gLogEvent.ClientSay(pEntity);
 
 	RETURN_META(MRES_IGNORED);
 }

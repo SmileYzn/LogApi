@@ -6,7 +6,7 @@ CLogApi gLogApi;
 void CLogApi::ServerActivate()
 {
 	// Enable Log API (0 Disable, 1 Enable)
-	this->m_log_api_on = gLogUtil.CvarRegister("log_api_enable", "1");
+	this->m_log_api_on = gLogUtil.CvarRegister("log_api_enable", "0");
 
 	// Set Log API Address (API HTTP/s Address Ie. https://api.yoursite.com/)
 	this->m_log_api_address = gLogUtil.CvarRegister("log_api_address", "");
@@ -16,6 +16,9 @@ void CLogApi::ServerActivate()
 
 	// Set Log API Bearer Token (Authentication Token or leave empty to disable)
 	this->m_log_api_bearer = gLogUtil.CvarRegister("log_api_bearer", "");
+
+	// Execute Settings File
+	g_engfuncs.pfnServerCommand("exec addons/logapi/logapi.cfg\n");
 
 	// Clear events
 	this->m_Events.clear();

@@ -12,6 +12,8 @@ namespace LogApi
 		ClientDisconnect,
 		ClientKill,
 		ClientUserInfoChanged,
+		ClientCommand,
+		ClientSay,
 	};
 }
 
@@ -26,6 +28,8 @@ public:
 	void ClientDisconnect(edict_t* pEntity);
 	void ClientKill(edict_t* pEntity);
 	void ClientUserInfoChanged(edict_t* pEntity, char* InfoBuffer);
+	void ClientCommand(edict_t* pEntity);
+	void ClientSay(edict_t* pEntity);
 private:
 	// Current event data
 	nlohmann::ordered_json m_Event;

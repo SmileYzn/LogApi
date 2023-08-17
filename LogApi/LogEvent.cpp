@@ -55,7 +55,7 @@ void CLogEvent::ClientConnect(edict_t* pEntity, const char* pszName, const char*
 	{
 		this->m_Event.clear();
 
-		if (pEntity)
+		if (!FNullEnt(pEntity))
 		{
 			this->m_Event["Event"] = __func__;
 
@@ -78,7 +78,7 @@ void CLogEvent::ClientPutInServer(edict_t* pEntity)
 	{
 		this->m_Event.clear();
 
-		if (pEntity)
+		if (!FNullEnt(pEntity))
 		{
 			this->m_Event["Event"] = __func__;
 
@@ -99,7 +99,7 @@ void CLogEvent::ClientDisconnect(edict_t* pEntity)
 	{
 		this->m_Event.clear();
 
-		if (pEntity)
+		if (!FNullEnt(pEntity))
 		{
 			this->m_Event["Event"] = __func__;
 
@@ -120,7 +120,7 @@ void CLogEvent::ClientKill(edict_t* pEntity)
 	{
 		this->m_Event.clear();
 
-		if (pEntity)
+		if (!FNullEnt(pEntity))
 		{
 			this->m_Event["Event"] = __func__;
 
@@ -141,7 +141,7 @@ void CLogEvent::ClientUserInfoChanged(edict_t* pEntity, char* InfoBuffer)
 	{
 		this->m_Event.clear();
 
-		if (pEntity)
+		if (!FNullEnt(pEntity))
 		{
 			this->m_Event["Event"] = __func__;
 
@@ -155,5 +155,89 @@ void CLogEvent::ClientUserInfoChanged(edict_t* pEntity, char* InfoBuffer)
 		}
 
 		gLogApi.SendEvent(LogApi::Events::ClientUserInfoChanged, this->m_Event);
+	}
+}
+
+void CLogEvent::ClientCommand(edict_t* pEntity)
+{
+	if (gLogApi.EventEnabled(__func__))
+	{
+		this->m_Event.clear();
+
+		if (!FNullEnt(pEntity))
+		{
+			auto Command = g_engfuncs.pfnCmd_Argv(0);
+
+			if (Command)
+			{
+				if (Command[0u] != '\0')
+				{
+					this->m_Event["Event"] = __func__;
+
+					this->m_Event["UserId"] = g_engfuncs.pfnGetPlayerUserId(pEntity);
+
+					this->m_Event["Name"] = STRING(pEntity->v.netname);
+
+					this->m_Event["AuthId"] = g_engfuncs.pfnGetPlayerAuthId(pEntity);
+
+					this->m_Event["Command"] = Command;
+
+					this->m_Event["Args"] = "";
+
+					auto Args = g_engfuncs.pfnCmd_Args();
+
+					if (Args)
+					{
+						if (Args[0u] != '\0')
+						{
+							this->m_Event["Args"] = Args;
+						}
+					}
+				}
+			}
+		}
+
+		gLogApi.SendEvent(LogApi::Events::ClientCommand, this->m_Event);
+	}
+}
+
+void CLogEvent::ClientSay(edict_t* pEntity)
+{
+	if (gLogApi.EventEnabled(__func__))
+	{
+		this->m_Event.clear();
+
+		if (!FNullEnt(pEntity))
+		{
+			auto Type = g_engfuncs.pfnCmd_Argv(0);
+
+			if (Type)
+			{
+				if (Type[0u] != '\0')
+				{
+					auto Message = g_engfuncs.pfnCmd_Args();
+
+					if (Message[0u] != '\0')
+					{
+						if (!Q_stricmp(Type, "say") || !Q_stricmp(Type, "say_team"))
+						{
+							this->m_Event["Event"] = __func__;
+
+							this->m_Event["UserId"] = g_engfuncs.pfnGetPlayerUserId(pEntity);
+
+							this->m_Event["Name"] = STRING(pEntity->v.netname);
+
+							this->m_Event["AuthId"] = g_engfuncs.pfnGetPlayerAuthId(pEntity);
+
+							this->m_Event["Type"] = Type;
+
+							this->m_Event["Message"] = Message;
+						}
+					}
+				}
+			}
+		}
+
+		gLogApi.SendEvent(LogApi::Events::ClientSay, this->m_Event);
 	}
 }

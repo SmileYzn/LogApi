@@ -6,5 +6,7 @@
 	"ClientPutInServer":		false,
 	"ClientDisconnect":		false,
 	"ClientKill": 			false,
-	"ClientUserInfoChanged": 	false
+	"ClientUserInfoChanged": 	false,
+	"ClientCommand": 		false,
+	"ClientSay": 			false
 }
