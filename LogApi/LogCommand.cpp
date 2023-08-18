@@ -6,6 +6,7 @@ void CLogCommand::ServerActivate()
 {
 	g_engfuncs.pfnAddServerCommand("log_say", this->Say);
 	g_engfuncs.pfnAddServerCommand("log_tsay", this->TeamSay);
+	g_engfuncs.pfnAddServerCommand("log_csay", this->CenterSay);
 	g_engfuncs.pfnAddServerCommand("log_psay", this->PrivateSay);
 }
 
@@ -45,6 +46,25 @@ void CLogCommand::TeamSay()
 	}
 
 	LOG_CONSOLE(PLID, "[%s] Usage: log_say <message>", Plugin_info.logtag);
+}
+
+void CLogCommand::CenterSay()
+{
+	if (g_engfuncs.pfnCmd_Argc() >= 2)
+	{
+		auto Message = g_engfuncs.pfnCmd_Args();
+
+		if (Message)
+		{
+			if (Message[0u] != '\0')
+			{
+				gLogUtil.HudMessage(nullptr, gLogCommand.GetHudParameters(false), "%s", Message);
+				return;
+			}
+		}
+	}
+
+	LOG_CONSOLE(PLID, "[%s] Usage: log_cay <message>", Plugin_info.logtag);
 }
 
 void CLogCommand::PrivateSay()

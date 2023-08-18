@@ -7,6 +7,7 @@ public:
 
 	static void Say();
 	static void TeamSay();
+	static void CenterSay();
 	static void PrivateSay();
 
 	hudtextparms_t GetHudParameters(bool TeamSay)
