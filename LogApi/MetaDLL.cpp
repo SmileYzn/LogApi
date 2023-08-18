@@ -67,7 +67,7 @@ void DLL_POST_ServerDeactivate(void)
 	RETURN_META(MRES_IGNORED);
 }
 
-void DLL_POST_StartFrame(void)
+void DLL_POST_StartFrame()
 {
 	gLogCurl.ServerFrame();
 

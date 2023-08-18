@@ -4,10 +4,10 @@ CLogCommand gLogCommand;
 
 void CLogCommand::ServerActivate()
 {
-	g_engfuncs.pfnAddServerCommand("log_say", this->Say);
-	g_engfuncs.pfnAddServerCommand("log_tsay", this->TeamSay);
-	g_engfuncs.pfnAddServerCommand("log_csay", this->CenterSay);
-	g_engfuncs.pfnAddServerCommand("log_psay", this->PrivateSay);
+	g_engfuncs.pfnAddServerCommand(LOG_COMMAND_LIST[0], this->Say);
+	g_engfuncs.pfnAddServerCommand(LOG_COMMAND_LIST[1], this->TeamSay);
+	g_engfuncs.pfnAddServerCommand(LOG_COMMAND_LIST[2], this->CenterSay);
+	g_engfuncs.pfnAddServerCommand(LOG_COMMAND_LIST[3], this->PrivateSay);
 }
 
 void CLogCommand::Say()
