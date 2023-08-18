@@ -145,7 +145,10 @@ CBasePlayer* CLogUtil::FindPlayer(std::string Target)
 
 							if (!Find.empty())
 							{
-								std::transform(Find.begin(), Find.end(), Find.begin(), std::tolower);
+								std::transform(Find.begin(), Find.end(), Find.begin(), [](unsigned char character)
+								{
+									return std::tolower(character);
+								});
 
 								if (Find.find(Target) != std::string::npos)
 								{
