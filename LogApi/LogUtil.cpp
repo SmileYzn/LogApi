@@ -115,8 +115,6 @@ CBasePlayer* CLogUtil::FindPlayer(std::string Target)
 	{
 		if (Target.length() > 1)
 		{
-			std::transform(Target.begin(), Target.end(), Target.begin(), std::tolower);
-
 			std::string Find = "";
 
 			for (auto i = 1; i <= gpGlobals->maxClients; i++)
