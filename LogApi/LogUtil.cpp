@@ -29,25 +29,18 @@ cvar_t* CLogUtil::CvarRegister(const char* Name, const char* Value)
 
 void CLogUtil::ServerExecute(std::string Command)
 {
-	// If is not null
 	if (!Command.empty())
 	{
-		// If is not empty
 		if (Command.length() > 0)
 		{
-			// Add end line character
 			Command += "\n";
 
-			// Dump char array as pointer
 			auto String = Q_strdup(Command.c_str());
 
-			// If is not null
 			if (String)
 			{
-				// If is not empty
 				if (String[0u] != '\0')
 				{
-					// Execute final command
 					g_engfuncs.pfnServerCommand(String);
 				}
 			}
@@ -97,4 +90,167 @@ void CLogUtil::ClientPrint(edict_t* pEntity, int msg_dest, const char* Format, .
 		g_engfuncs.pfnWriteString(Buffer);
 		g_engfuncs.pfnMessageEnd();
 	}
+}
+
+unsigned short CLogUtil::FixedUnsigned16(float value, float scale)
+{
+	int output = value * scale;
+
+	if (output < 0)
+	{
+		output = 0;
+	}
+
+	if (output > USHRT_MAX)
+	{
+		output = USHRT_MAX;
+	}
+
+	return (unsigned short)output;
+}
+
+CBasePlayer* CLogUtil::FindPlayer(std::string Target)
+{
+	if (!Target.empty())
+	{
+		if (Target.length() > 1)
+		{
+			std::transform(Target.begin(), Target.end(), Target.begin(), std::tolower);
+
+			std::string Find = "";
+
+			for (auto i = 1; i <= gpGlobals->maxClients; i++)
+			{
+				auto Player = UTIL_PlayerByIndexSafe(i);
+
+				if (Player)
+				{
+					if (!Player->IsDormant())
+					{
+						if (Target[0u] == '#')
+						{
+							Find = Target.substr(1);
+
+							if (!Find.empty())
+							{
+								if (g_engfuncs.pfnGetPlayerUserId(Player->edict()) == Q_atoi(Find.c_str()))
+								{
+									return Player;
+								}
+							}
+						}
+						else
+						{
+							Find = STRING(Player->edict()->v.netname);
+
+							if (!Find.empty())
+							{
+								std::transform(Find.begin(), Find.end(), Find.begin(), std::tolower);
+
+								if (Find.find(Target) != std::string::npos)
+								{
+									return Player;
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+
+	return nullptr;
+}
+
+short CLogUtil::FixedSigned16(float value, float scale)
+{
+	int output = value * scale;
+
+	if (output > SHRT_MAX)
+	{
+		output = SHRT_MAX;
+	}
+
+	if (output < SHRT_MIN)
+	{
+		output = SHRT_MIN;
+	}
+
+	return (short)output;
+}
+
+hudtextparms_t CLogUtil::HudParam(int red, int green, int blue, float x, float y, int effects, float fxtime, float holdtime, float fadeintime, float fadeouttime, int channel)
+{
+	hudtextparms_t hud;
+
+	hud.r1 = red;
+	hud.g1 = green;
+	hud.b1 = blue;
+	hud.a1 = 255;
+	hud.r2 = 255;
+	hud.g2 = 255;
+	hud.b2 = 255;
+	hud.a2 = 255;
+	hud.x = x;
+	hud.y = y;
+	hud.effect = effects;
+	hud.fxTime = fxtime;
+	hud.holdTime = holdtime;
+	hud.fadeinTime = fadeintime;
+	hud.fadeoutTime = fadeouttime;
+	hud.channel = channel;
+
+	return hud;
+}
+
+void CLogUtil::HudMessage(edict_t* pEntity, hudtextparms_t textparms, const char* Format, ...)
+{
+	va_list argList;
+
+	va_start(argList, Format);
+
+	char Buffer[511];
+
+	vsnprintf(Buffer, sizeof(Buffer), Format, argList);
+
+	va_end(argList);
+
+	if (pEntity)
+	{
+		g_engfuncs.pfnMessageBegin(MSG_ONE_UNRELIABLE, SVC_TEMPENTITY, NULL, pEntity);
+	}
+	else
+	{
+		g_engfuncs.pfnMessageBegin(MSG_BROADCAST, SVC_TEMPENTITY, NULL, NULL);
+	}
+
+	g_engfuncs.pfnWriteByte(TE_TEXTMESSAGE);
+	g_engfuncs.pfnWriteByte(textparms.channel & 0xFF);
+
+	g_engfuncs.pfnWriteShort(this->FixedSigned16(textparms.x, BIT(13)));
+	g_engfuncs.pfnWriteShort(this->FixedSigned16(textparms.y, BIT(13)));
+
+	g_engfuncs.pfnWriteByte(textparms.effect);
+
+	g_engfuncs.pfnWriteByte(textparms.r1);
+	g_engfuncs.pfnWriteByte(textparms.g1);
+	g_engfuncs.pfnWriteByte(textparms.b1);
+	g_engfuncs.pfnWriteByte(textparms.a1);
+
+	g_engfuncs.pfnWriteByte(textparms.r2);
+	g_engfuncs.pfnWriteByte(textparms.g2);
+	g_engfuncs.pfnWriteByte(textparms.b2);
+	g_engfuncs.pfnWriteByte(textparms.a2);
+
+	g_engfuncs.pfnWriteShort(this->FixedUnsigned16(textparms.fadeinTime, BIT(8)));
+	g_engfuncs.pfnWriteShort(this->FixedUnsigned16(textparms.fadeoutTime, BIT(8)));
+	g_engfuncs.pfnWriteShort(this->FixedUnsigned16(textparms.holdTime, BIT(8)));
+
+	if (textparms.effect == 2)
+	{
+		g_engfuncs.pfnWriteShort(this->FixedUnsigned16(textparms.fxTime, BIT(8)));
+	}
+
+	g_engfuncs.pfnWriteString(Buffer);
+	g_engfuncs.pfnMessageEnd();
 }
