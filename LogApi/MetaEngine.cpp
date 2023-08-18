@@ -24,7 +24,6 @@ C_DLLEXPORT int GetEngineFunctions_Post(enginefuncs_t* pengfuncsFromEngine, int*
 {
 	memset(&gENGINE_FunctionTable_Post, 0, sizeof(enginefuncs_t));
 
-	// Register Functions Here //
 	gENGINE_FunctionTable_Post.pfnAlertMessage = ENGINE_POST_AlertMessage;
 
 	memcpy(pengfuncsFromEngine, &gENGINE_FunctionTable_Post, sizeof(enginefuncs_t));
@@ -52,3 +51,4 @@ void ENGINE_POST_AlertMessage(ALERT_TYPE atype, const char* szFmt, ...)
 	RETURN_META(MRES_IGNORED);
 }
 #pragma endregion
+
