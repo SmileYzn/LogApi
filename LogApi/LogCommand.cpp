@@ -4,10 +4,11 @@ CLogCommand gLogCommand;
 
 void CLogCommand::ServerActivate()
 {
-	g_engfuncs.pfnAddServerCommand(LOG_COMMAND_LIST[0], this->Say);
-	g_engfuncs.pfnAddServerCommand(LOG_COMMAND_LIST[1], this->TeamSay);
-	g_engfuncs.pfnAddServerCommand(LOG_COMMAND_LIST[2], this->CenterSay);
-	g_engfuncs.pfnAddServerCommand(LOG_COMMAND_LIST[3], this->PrivateSay);
+	g_engfuncs.pfnAddServerCommand("log_say", this->Say);
+	g_engfuncs.pfnAddServerCommand("log_tsay", this->TeamSay);
+	g_engfuncs.pfnAddServerCommand("log_csay", this->CenterSay);
+	g_engfuncs.pfnAddServerCommand("log_psay", this->PrivateSay);
+	g_engfuncs.pfnAddServerCommand("log_motd", this->OpenMotd);
 }
 
 void CLogCommand::Say()
@@ -87,7 +88,7 @@ void CLogCommand::PrivateSay()
 
 						if (Player)
 						{
-							Message.erase(0, Target.size());
+							Message.erase(0, Target.size() + 1);
 
 							gLogUtil.ClientPrint(Player->edict(), PRINT_CHAT, "%s", Message.c_str());
 						}
@@ -104,4 +105,51 @@ void CLogCommand::PrivateSay()
 	}
 
 	LOG_CONSOLE(PLID, "[%s] Usage: log_psay <name or #userid> <message>", Plugin_info.logtag);
+}
+
+void CLogCommand::OpenMotd()
+{
+	if (g_engfuncs.pfnCmd_Argc() >= 3)
+	{
+		std::string Target = g_engfuncs.pfnCmd_Argv(1);
+
+		if (!Target.empty())
+		{
+			if (Target.length() > 1)
+			{
+				std::string Message = g_engfuncs.pfnCmd_Args();
+
+				if (!Message.empty())
+				{
+					if (Message.length() > 0)
+					{
+						auto Player = gLogUtil.FindPlayer(Target);
+
+						if (Player)
+						{
+							Message.erase(0, Target.size() + 1);
+
+							char Path[MAX_MOTD_LENGTH] = { 0 };
+
+							Q_memset(Path, 0, sizeof(Path));
+
+							Q_strncpy(Path, Message.data(), sizeof(Path));
+
+							gLogUtil.ShowMotd(Player->edict(), Path, strlen(Path));
+
+							return;
+						}
+						else
+						{
+							LOG_CONSOLE(PLID, "[%s] Client with that name or userid '%s' not found.", Plugin_info.logtag, Target.c_str());
+						}
+
+						return;
+					}
+				}
+			}
+		}
+	}
+
+	LOG_CONSOLE(PLID, "[%s] Usage: log_motd <name or #userid> <webpage or file name>", Plugin_info.logtag);
 }

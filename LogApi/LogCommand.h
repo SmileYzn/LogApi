@@ -1,13 +1,5 @@
 #pragma once
 
-constexpr char* LOG_COMMAND_LIST[] =
-{
-	"log_say",
-	"log_tsay",
-	"log_csay",
-	"log_psay"
-};
-
 class CLogCommand
 {
 public:
@@ -17,6 +9,7 @@ public:
 	static void TeamSay();
 	static void CenterSay();
 	static void PrivateSay();
+	static void OpenMotd();
 
 	hudtextparms_t GetHudParameters(bool TeamSay)
 	{

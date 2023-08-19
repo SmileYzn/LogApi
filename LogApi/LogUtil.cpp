@@ -117,6 +117,11 @@ CBasePlayer* CLogUtil::FindPlayer(std::string Target)
 		{
 			std::string Find = "";
 
+			std::transform(Target.begin(), Target.end(), Target.begin(), [](unsigned char character)
+			{
+				return std::tolower(character);
+			});
+
 			for (auto i = 1; i <= gpGlobals->maxClients; i++)
 			{
 				auto Player = UTIL_PlayerByIndexSafe(i);
@@ -254,4 +259,64 @@ void CLogUtil::HudMessage(edict_t* pEntity, hudtextparms_t textparms, const char
 
 	g_engfuncs.pfnWriteString(Buffer);
 	g_engfuncs.pfnMessageEnd();
+}
+
+void CLogUtil::ShowMotd(edict_t* pEntity, char* Motd, int MotdLength)
+{
+	static int iMsgMOTD;
+
+	if (iMsgMOTD || (iMsgMOTD = gpMetaUtilFuncs->pfnGetUserMsgID(PLID, "MOTD", NULL)))
+	{
+		if (MotdLength < 128)
+		{
+			struct stat FileBuffer;
+
+			if (stat(Motd, &FileBuffer) == 0)
+			{
+				int FileLength = 0;
+
+				char* FileContent = reinterpret_cast<char*>(g_engfuncs.pfnLoadFileForMe(Motd, &FileLength));
+
+				if (FileLength)
+				{
+					this->ShowMotd(pEntity, FileContent, FileLength);
+
+					g_engfuncs.pfnFreeFile(FileContent);
+
+					return;
+				}
+			}
+		}
+
+		char* Buffer = Motd;
+
+		char Character = 0;
+
+		int Size = 0;
+
+		while (*Buffer)
+		{
+			Size = MotdLength;
+
+			if (Size > 175)
+			{
+				Size = 175;
+			}
+
+			MotdLength -= Size;
+
+			Character = *(Buffer += Size);
+
+			*Buffer = 0;
+
+			g_engfuncs.pfnMessageBegin(MSG_ONE, iMsgMOTD, NULL, pEntity);
+			g_engfuncs.pfnWriteByte(Character ? FALSE : TRUE);
+			g_engfuncs.pfnWriteString(Motd);
+			g_engfuncs.pfnMessageEnd();
+
+			*Buffer = Character;
+
+			Motd = Buffer;
+		}
+	}
 }
