@@ -17,11 +17,17 @@ void CLogApi::ServerActivate()
 	// Set Log API Bearer Token (Authentication Token or leave empty to disable)
 	this->m_log_api_bearer = gLogUtil.CvarRegister("log_api_bearer", "");
 
+	// Server Info Event Delay (Delay to update Server Info on webserver)
+	this->log_api_delay = gLogUtil.CvarRegister("log_api_delay", "60.0");
+
 	// Execute Settings File
 	g_engfuncs.pfnServerCommand("exec addons/logapi/logapi.cfg\n");
 
 	// Clear events
 	this->m_Events.clear();
+
+	// Frame Time
+	this->m_FrameTime = (gpGlobals->time + this->log_api_delay->value);
 
 	try
 	{
@@ -42,17 +48,37 @@ void CLogApi::ServerActivate()
 			// Loop each item
 			for (auto const& event : json.items())
 			{
+				// Insert event as enabled / disabled
 				this->m_Events.insert(std::make_pair(event.key(), event.value().get<bool>()));
 			}
 		}
 		else
 		{
+			// Failed on error
 			LOG_CONSOLE(PLID, "[%s] Failed to open file: %s", __func__, LOG_API_FILE_EVENTS);
 		}
 	}
 	catch (nlohmann::json::parse_error& e)
 	{
+		// JSON exeption errors
 		LOG_CONSOLE(PLID, "[%s] %s", __func__, e.what());
+	}
+}
+
+// On Server Frame
+void CLogApi::ServerFrame()
+{
+	if (this->log_api_delay)
+	{
+		if (this->log_api_delay->value > 5.0f)
+		{
+			if (gpGlobals->time >= this->m_FrameTime)
+			{
+				gLogEvent.ServerInfo();
+
+				this->m_FrameTime = (gpGlobals->time + this->log_api_delay->value);
+			}
+		}
 	}
 }
 
@@ -173,4 +199,39 @@ void CLogApi::EventResult(int EventIndex, nlohmann::ordered_json Data)
 			}
 		}
 	}
+}
+
+nlohmann::ordered_json CLogApi::GetServerInfo()
+{
+	nlohmann::ordered_json ServerInfo;
+
+	ServerInfo["Address"] = g_engfuncs.pfnCVarGetString("net_address");
+
+	ServerInfo["Hostname"] = g_engfuncs.pfnCVarGetString("hostname");
+
+	ServerInfo["Map"] = STRING(gpGlobals->mapname);
+
+	ServerInfo["MaxPlayers"] = gpGlobals->maxClients;
+
+	auto Players = gLogPlayer.GetPlayers();
+
+	if (!Players.empty())
+	{
+		for (auto const& Player : Players)
+		{
+			ServerInfo[Player.first] =
+			{
+				{"Auth", Player.first},
+				{"Name", Player.second.Name},
+				{"Address", Player.second.Address},
+				{"Team", Player.second.Team},
+				{"Frags", Player.second.Frags},
+				{"Deaths", Player.second.Deaths},
+				{"GameTime", Player.second.GameTime},
+				{"ConnectTime", Player.second.ConnectTime}
+			};
+		}
+	}
+
+	return ServerInfo;
 }

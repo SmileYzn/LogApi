@@ -12,6 +12,9 @@ public:
 	// On Server Activate Event
 	void ServerActivate();
 
+	// On Server Frame
+	void ServerFrame();
+
 	// Check if event is enabled
 	bool EventEnabled(const char* EventName);
 
@@ -24,15 +27,22 @@ public:
 	// Parse Event Result
 	void EventResult(int EventIndex, nlohmann::ordered_json Result);
 
+	// Get Server info
+	nlohmann::ordered_json GetServerInfo();
+
 private:
 	// Console variables
 	cvar_t* m_log_api_on;
 	cvar_t* m_log_api_address;
 	cvar_t* m_log_api_timeout;
 	cvar_t* m_log_api_bearer;
+	cvar_t* log_api_delay;
 
 	// Events
 	std::map<std::string, bool> m_Events;
+
+	// Frame time
+	float m_FrameTime = 0.0f;
 };
 
 extern CLogApi gLogApi;

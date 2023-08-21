@@ -2,6 +2,7 @@
 	"ServerActivate": 		false,
 	"ServerDeactivate": 		false,
 	"ServerAlertMessage": 		false,
+	"ServerInfo": 			false,
 	"ClientConnect":		false,
 	"ClientPutInServer":		false,
 	"ClientDisconnect":		false,

@@ -37,6 +37,9 @@
     <Filter Include="LogApi\LogCommand">
       <UniqueIdentifier>{d50e8ce2-2124-4d0b-9222-e7a61271eb9f}</UniqueIdentifier>
     </Filter>
+    <Filter Include="LogApi\LogPlayer">
+      <UniqueIdentifier>{9e0869d2-d0d5-4d0d-b85f-8b32c1d9849e}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="precompiled.cpp">
@@ -72,6 +75,9 @@
     <ClCompile Include="LogCommand.cpp">
       <Filter>LogApi\LogCommand</Filter>
     </ClCompile>
+    <ClCompile Include="LogPlayer.cpp">
+      <Filter>LogApi\LogPlayer</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="precompiled.h">
@@ -106,6 +112,9 @@
     </ClInclude>
     <ClInclude Include="LogCommand.h">
       <Filter>LogApi\LogCommand</Filter>
+    </ClInclude>
+    <ClInclude Include="LogPlayer.h">
+      <Filter>LogApi\LogPlayer</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

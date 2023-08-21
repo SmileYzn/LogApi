@@ -10,6 +10,7 @@ public:
 	static void CenterSay();
 	static void PrivateSay();
 	static void OpenMotd();
+	static void ServerInfo();
 
 	hudtextparms_t GetHudParameters(bool TeamSay)
 	{

@@ -320,3 +320,21 @@ void CLogUtil::ShowMotd(edict_t* pEntity, char* Motd, int MotdLength)
 		}
 	}
 }
+
+const char* CLogUtil::GetAuthId(edict_t* pEntity)
+{
+	if (!FNullEnt(pEntity))
+	{
+		if (!(pEntity->v.flags & FL_FAKECLIENT))
+		{
+			if (!(pEntity->v.flags & FL_PROXY))
+			{
+				return g_engfuncs.pfnGetPlayerAuthId(pEntity);
+			}
+		}
+
+		return STRING(pEntity->v.netname);
+	}
+
+	return nullptr;
+}

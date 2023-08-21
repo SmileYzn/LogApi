@@ -44,12 +44,13 @@ class LogAPI
      * 
      * 
      * @param string $Event             Event Name
+     * @param array $Server		Server information data
      * @param string $EdictCount        Entity Count in Server (Number of edict)
      * @param string $ClientMax         Number of maximum allowed clients in server
      * 
      * @return mixed                    Array containing ServerExecute commands or null
      */
-    private function ServerActivate($Event, $EdictCount, $ClientMax)
+    private function ServerActivate($Event, $Server, $EdictCount, $ClientMax)
     {
         return null;
     }
@@ -58,10 +59,11 @@ class LogAPI
      * On Server Deactivate Event
      * 
      * @param string $Event             Event Name
+     * @param array $Server		Server information data
      * 
      * @return mixed                    Array containing ServerExecute commands or null
      */
-    private function ServerDeactivate($Event)
+    private function ServerDeactivate($Event, $Server)
     {
         return null;
     }
@@ -70,12 +72,26 @@ class LogAPI
      * On Server Alert Message
      * 
      * @param string $Event             Event Name
+     * @param array $Server		Server information data
      * @param string $Type              Alert Mesasge Type (Always 5 at_logged)
      * @param string $Message           Log string
      * 
      * @return mixed                    Array containing ServerExecute commands or null
      */
-    private function ServerAlertMessage($Event, $Type, $Message)
+    private function ServerAlertMessage($Event, $Server, $Type, $Message)
+    {
+        return null;
+    }
+
+    /**
+     * On Server Update Information
+     * 
+     * @param string $Event             Event Name
+     * @param array $Server		Server information data
+     *
+     * @return mixed                    Array containing ServerExecute commands or null
+     */
+    private function ServerInfo($Event, $Server, $Address, $Hostname, $Map, $MaxPlayers, $Players)
     {
         return null;
     }
@@ -84,6 +100,7 @@ class LogAPI
      * On Client Connect
      * 
      * @param string $Event             Event Name
+     * @param array $Server		Server information data
      * @param string $UserId            User Index
      * @param string $Name              Client Name
      * @param string $AuthId            Client AuthId
@@ -91,7 +108,7 @@ class LogAPI
      * 
      * @return mixed                    Array containing ServerExecute commands or null
      */
-    private function ClientConnect($Event, $UserId, $Name, $AuthId, $Address)
+    private function ClientConnect($Event, $Server, $UserId, $Name, $AuthId, $Address)
     {
         return null;
     }
@@ -100,13 +117,14 @@ class LogAPI
      * On Client Put In Server
      * 
      * @param string $Event             Event Name
+     * @param array $Server		Server information data
      * @param string $UserId            User Index
      * @param string $Name              Client Name
      * @param string $AuthId            Client AuthId
      * 
      * @return mixed                    Array containing ServerExecute commands or null
      */
-    private function ClientPutInServer($Event, $UserId, $Name, $AuthId)
+    private function ClientPutInServer($Event, $Server, $UserId, $Name, $AuthId)
     {
         return null;
     }
@@ -115,13 +133,14 @@ class LogAPI
      * On Client Disconnect
      * 
      * @param string $Event             Event Name
+     * @param array $Server		Server information data
      * @param string $UserId            User Index
      * @param string $Name              Client Name
      * @param string $AuthId            Client AuthId
      * 
      * @return mixed                    Array containing ServerExecute commands or null
      */
-    private function ClientDisconnect($Event, $UserId, $Name, $AuthId)
+    private function ClientDisconnect($Event, $Server, $UserId, $Name, $AuthId)
     {
         return null;
     }
@@ -130,13 +149,14 @@ class LogAPI
      * On Client Killed
      * 
      * @param string $Event             Event Name
+     * @param array $Server		Server information data
      * @param string $UserId            User Index
      * @param string $Name              Client Name
      * @param string $AuthId            Client AuthId
      * 
      * @return mixed                    Array containing ServerExecute commands or null
      */
-    private function ClientKill($Event, $UserId, $Name, $AuthId)
+    private function ClientKill($Event, $Server, $UserId, $Name, $AuthId)
     {
         return null;
     }
@@ -145,6 +165,7 @@ class LogAPI
      * On Client Information Changed
      * 
      * @param string $Event             Event Name
+     * @param array $Server		Server information data
      * @param string $UserId            User Index
      * @param string $Name              Client Name
      * @param string $AuthId            Client AuthId
@@ -152,7 +173,7 @@ class LogAPI
      * 
      * @return mixed                    Array containing ServerExecute commands or null
      */
-    private function ClientUserInfoChanged($Event, $UserId, $Name, $AuthId, $InfoBuffer)
+    private function ClientUserInfoChanged($Event, $Server, $UserId, $Name, $AuthId, $InfoBuffer)
     {
         return null;
     }
@@ -161,6 +182,7 @@ class LogAPI
      * On Client Command
      * 
      * @param string $Event             Event Name
+     * @param array $Server		Server information data
      * @param string $UserId            User Index
      * @param string $Name              Client Name
      * @param string $AuthId            Client AuthId
@@ -169,7 +191,7 @@ class LogAPI
      * 
      * @return mixed                    Array containing ServerExecute commands or null
      */
-    private function ClientCommand($Event, $UserId, $Name, $AuthId, $Command, $Args)
+    private function ClientCommand($Event, $Server, $UserId, $Name, $AuthId, $Command, $Args)
     {
         return null;
     }
@@ -178,6 +200,7 @@ class LogAPI
      * On Client say or say_team commands
      * 
      * @param string $Event             Event Name
+     * @param array $Server		Server information data
      * @param string $UserId            User Index
      * @param string $Name              Client Name
      * @param string $AuthId            Client AuthId
@@ -186,7 +209,7 @@ class LogAPI
      * 
      * @return mixed                    Array containing ServerExecute commands or null
      */
-    private function ClientSay($Event, $UserId, $Name, $AuthId, $Type, $Message)
+    private function ClientSay($Event, $Server, $UserId, $Name, $AuthId, $Type, $Message)
     {
         return null;
     }

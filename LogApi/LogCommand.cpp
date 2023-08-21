@@ -9,6 +9,7 @@ void CLogCommand::ServerActivate()
 	g_engfuncs.pfnAddServerCommand("log_csay", this->CenterSay);
 	g_engfuncs.pfnAddServerCommand("log_psay", this->PrivateSay);
 	g_engfuncs.pfnAddServerCommand("log_motd", this->OpenMotd);
+	g_engfuncs.pfnAddServerCommand("log_info", this->ServerInfo);
 }
 
 void CLogCommand::Say()
@@ -152,4 +153,11 @@ void CLogCommand::OpenMotd()
 	}
 
 	LOG_CONSOLE(PLID, "[%s] Usage: log_motd <name or #userid> <webpage or file name>", Plugin_info.logtag);
+}
+
+void CLogCommand::ServerInfo()
+{
+	gLogEvent.ServerInfo();
+
+	LOG_CONSOLE(PLID, "[%s] Server info sent to webserver.", Plugin_info.logtag);
 }

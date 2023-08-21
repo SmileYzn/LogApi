@@ -71,11 +71,15 @@ void DLL_POST_StartFrame()
 {
 	gLogCurl.ServerFrame();
 
+	gLogApi.ServerFrame();
+
 	RETURN_META(MRES_IGNORED);
 }
 
 qboolean DLL_POST_ClientConnect(edict_t* pEntity, const char* pszName, const char* pszAddress, char szRejectReason[128])
 {
+	gLogPlayer.Connect(pEntity, pszName, pszAddress);
+	
 	gLogEvent.ClientConnect(pEntity, pszName, pszAddress, szRejectReason);
 
 	RETURN_META_VALUE(MRES_IGNORED, TRUE);
@@ -83,6 +87,8 @@ qboolean DLL_POST_ClientConnect(edict_t* pEntity, const char* pszName, const cha
 
 void DLL_POST_ClientPutInServer(edict_t* pEntity)
 {
+	gLogPlayer.Update(pEntity);
+
 	gLogEvent.ClientPutInServer(pEntity);
 
 	RETURN_META(MRES_IGNORED);
@@ -90,6 +96,8 @@ void DLL_POST_ClientPutInServer(edict_t* pEntity)
 
 void DLL_POST_ClientDisconnect(edict_t* pEntity)
 {
+	gLogPlayer.Disconnect(pEntity);
+
 	gLogEvent.ClientDisconnect(pEntity);
 
 	RETURN_META(MRES_IGNORED);
@@ -97,6 +105,8 @@ void DLL_POST_ClientDisconnect(edict_t* pEntity)
 
 void DLL_POST_ClientKill(edict_t* pEntity)
 {
+	gLogPlayer.Update(pEntity);
+
 	gLogEvent.ClientKill(pEntity);
 
 	RETURN_META(MRES_IGNORED);
@@ -104,6 +114,8 @@ void DLL_POST_ClientKill(edict_t* pEntity)
 
 void DLL_POST_ClientUserInfoChanged(edict_t* pEntity, char* InfoBuffer)
 {
+	gLogPlayer.Update(pEntity);
+
 	gLogEvent.ClientUserInfoChanged(pEntity, InfoBuffer);
 
 	RETURN_META(MRES_IGNORED);
@@ -115,6 +127,8 @@ void DLL_POST_ClientCommand(edict_t* pEntity)
 	{
 		if (!FNullEnt(pEntity))
 		{
+			gLogPlayer.Update(pEntity);
+
 			gLogEvent.ClientCommand(pEntity);
 
 			gLogEvent.ClientSay(pEntity);

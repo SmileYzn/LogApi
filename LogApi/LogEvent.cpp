@@ -10,6 +10,8 @@ void CLogEvent::ServerActivate(edict_t* pEdictList, int edictCount, int clientMa
 
 		this->m_Event["Event"] = __func__;
 
+		this->m_Event["Server"] = gLogApi.GetServerInfo();
+
 		this->m_Event["EdictCount"] = edictCount;
 
 		this->m_Event["ClientMax"] = clientMax;
@@ -26,6 +28,8 @@ void CLogEvent::ServerDeactivate()
 
 		this->m_Event["Event"] = __func__;
 
+		this->m_Event["Server"] = gLogApi.GetServerInfo();
+
 		gLogApi.SendEvent(LogApi::Events::ServerDeactivate, this->m_Event);
 	}
 }
@@ -40,12 +44,28 @@ void CLogEvent::ServerAlertMessage(ALERT_TYPE aType, const char* szBuffer)
 
 			this->m_Event["Event"] = __func__;
 
+			this->m_Event["Server"] = gLogApi.GetServerInfo();
+
 			this->m_Event["Type"] = aType;
 
 			this->m_Event["Message"] = szBuffer;
 
 			gLogApi.SendEvent(LogApi::Events::ServerAlertMessage, this->m_Event);
 		}
+	}
+}
+
+void CLogEvent::ServerInfo()
+{
+	if (gLogApi.EventEnabled(__func__))
+	{
+		this->m_Event.clear();
+
+		this->m_Event["Event"] = __func__;
+
+		this->m_Event["Server"] = gLogApi.GetServerInfo();
+
+		gLogApi.SendEvent(LogApi::Events::ServerInfo, this->m_Event);
 	}
 }
 
@@ -58,6 +78,8 @@ void CLogEvent::ClientConnect(edict_t* pEntity, const char* pszName, const char*
 		if (!FNullEnt(pEntity))
 		{
 			this->m_Event["Event"] = __func__;
+
+			this->m_Event["Server"] = gLogApi.GetServerInfo();
 
 			this->m_Event["UserId"] = g_engfuncs.pfnGetPlayerUserId(pEntity);
 
@@ -82,6 +104,8 @@ void CLogEvent::ClientPutInServer(edict_t* pEntity)
 		{
 			this->m_Event["Event"] = __func__;
 
+			this->m_Event["Server"] = gLogApi.GetServerInfo();
+
 			this->m_Event["UserId"] = g_engfuncs.pfnGetPlayerUserId(pEntity);
 
 			this->m_Event["Name"] = STRING(pEntity->v.netname);
@@ -102,6 +126,8 @@ void CLogEvent::ClientDisconnect(edict_t* pEntity)
 		if (!FNullEnt(pEntity))
 		{
 			this->m_Event["Event"] = __func__;
+
+			this->m_Event["Server"] = gLogApi.GetServerInfo();
 
 			this->m_Event["UserId"] = g_engfuncs.pfnGetPlayerUserId(pEntity);
 
@@ -124,6 +150,8 @@ void CLogEvent::ClientKill(edict_t* pEntity)
 		{
 			this->m_Event["Event"] = __func__;
 
+			this->m_Event["Server"] = gLogApi.GetServerInfo();
+			
 			this->m_Event["UserId"] = g_engfuncs.pfnGetPlayerUserId(pEntity);
 
 			this->m_Event["Name"] = STRING(pEntity->v.netname);
@@ -144,6 +172,8 @@ void CLogEvent::ClientUserInfoChanged(edict_t* pEntity, char* InfoBuffer)
 		if (!FNullEnt(pEntity))
 		{
 			this->m_Event["Event"] = __func__;
+
+			this->m_Event["Server"] = gLogApi.GetServerInfo();
 
 			this->m_Event["UserId"] = g_engfuncs.pfnGetPlayerUserId(pEntity);
 
@@ -173,6 +203,8 @@ void CLogEvent::ClientCommand(edict_t* pEntity)
 				if (Command[0u] != '\0')
 				{
 					this->m_Event["Event"] = __func__;
+
+					this->m_Event["Server"] = gLogApi.GetServerInfo();
 
 					this->m_Event["UserId"] = g_engfuncs.pfnGetPlayerUserId(pEntity);
 
@@ -224,6 +256,8 @@ void CLogEvent::ClientSay(edict_t* pEntity)
 							if (!Q_stricmp(Type, "say") || !Q_stricmp(Type, "say_team"))
 							{
 								this->m_Event["Event"] = __func__;
+
+								this->m_Event["Server"] = gLogApi.GetServerInfo();
 
 								this->m_Event["UserId"] = g_engfuncs.pfnGetPlayerUserId(pEntity);
 

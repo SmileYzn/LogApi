@@ -84,4 +84,5 @@
 #include "LogCommand.h"
 #include "LogCurl.h"
 #include "LogEvent.h"
+#include "LogPlayer.h"
 #include "LogUtil.h"
