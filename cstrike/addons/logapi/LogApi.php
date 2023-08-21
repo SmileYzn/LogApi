@@ -91,7 +91,7 @@ class LogAPI
      *
      * @return mixed                    Array containing ServerExecute commands or null
      */
-    private function ServerInfo($Event, $Server, $Address, $Hostname, $Map, $MaxPlayers, $Players)
+    private function ServerInfo($Event, $Server)
     {
         return null;
     }
