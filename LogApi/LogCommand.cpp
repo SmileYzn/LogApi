@@ -89,7 +89,7 @@ void CLogCommand::PrivateSay()
 
 						if (Player)
 						{
-							Message.erase(0, Target.size() + 1);
+							Message.erase(0, Target.length());
 
 							gLogUtil.ClientPrint(Player->edict(), PRINT_CHAT, "%s", Message.c_str());
 						}
@@ -128,7 +128,7 @@ void CLogCommand::OpenMotd()
 
 						if (Player)
 						{
-							Message.erase(0, Target.size() + 1);
+							Message.erase(0, Target.length());
 
 							char Path[MAX_MOTD_LENGTH] = { 0 };
 
