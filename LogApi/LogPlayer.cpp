@@ -97,6 +97,11 @@ void CLogPlayer::Update(edict_t* pEntity)
 				}
 			}
 
+			if (this->m_Payers[Auth].ConnectTime <= 0.0f)
+			{
+				this->m_Payers[Auth].ConnectTime = gpGlobals->time;
+			}
+
 			this->m_Payers[Auth].GameTime = (gpGlobals->time - this->m_Payers[Auth].ConnectTime);
 		}
 	}
