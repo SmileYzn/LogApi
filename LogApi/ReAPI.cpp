@@ -82,10 +82,27 @@ bool ReAPI_Init()
 
 	g_RehldsSvs = g_RehldsApi->GetServerStatic();
 
+	g_RehldsHookchains->SV_DropClient()->registerHook(ReAPI_SV_DropClient);
+
 	return true;
 }
 
 bool ReAPI_Stop()
 {
+	g_RehldsHookchains->SV_DropClient()->unregisterHook(ReAPI_SV_DropClient);
+
 	return true;
+}
+
+
+void ReAPI_SV_DropClient(IRehldsHook_SV_DropClient* chain, IGameClient* client, bool crash, const char* Reason)
+{
+	auto pEdict = client->GetEdict();
+
+	if (!FNullEnt(pEdict))
+	{
+		gLogPlayer.Disconnect(pEdict);
+	}
+
+	chain->callNext(client, crash, Reason);
 }

@@ -9,3 +9,4 @@ extern bool ReGameDLL_Init();
 extern bool ReGameDLL_Stop();
 
 CGameRules *ReGameDLL_InstallGameRules(IReGameHook_InstallGameRules* chain);
+void ReAPI_SV_DropClient(IRehldsHook_SV_DropClient* chain, IGameClient* client, bool crash, const char* Reason);

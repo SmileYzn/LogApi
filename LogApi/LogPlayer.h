@@ -19,7 +19,7 @@ public:
 	void Connect(edict_t* pEntity, const char* pszName, const char* pszAddress);
 	void Disconnect(edict_t* pEntity);
 	void Update(edict_t* pEntity);
-	std::map<std::string, P_PLAYER_INFO> m_Payers;
+	std::map<std::string, P_PLAYER_INFO> m_Players;
 };
 
 extern CLogPlayer gLogPlayer;

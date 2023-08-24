@@ -226,9 +226,9 @@ nlohmann::ordered_json CLogApi::GetServerInfo()
 
 	ServerInfo["MaxPlayers"] = gpGlobals->maxClients;
 
-	if (!gLogPlayer.m_Payers.empty())
+	if (!gLogPlayer.m_Players.empty())
 	{
-		for (auto const& Player : gLogPlayer.m_Payers)
+		for (auto const& Player : gLogPlayer.m_Players)
 		{
 			ServerInfo["Players"][Player.first] =
 			{
