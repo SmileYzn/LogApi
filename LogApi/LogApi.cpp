@@ -76,11 +76,7 @@ void CLogApi::ServerFrame()
 			{
 				gLogEvent.ServerInfo();
 
-				LOG_CONSOLE(PLID, "[%s] Server info sent to webserver.", Plugin_info.logtag);
-
 				this->m_FrameTime = (gpGlobals->time + this->log_api_delay->value);
-
-				LOG_CONSOLE(PLID, "[%s] %f", Plugin_info.logtag, this->m_FrameTime);
 			}
 		}
 	}
