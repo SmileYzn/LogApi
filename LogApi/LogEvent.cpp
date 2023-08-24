@@ -117,7 +117,7 @@ void CLogEvent::ClientPutInServer(edict_t* pEntity)
 	}
 }
 
-void CLogEvent::ClientDisconnect(edict_t* pEntity)
+void CLogEvent::ClientDisconnect(edict_t* pEntity, bool Crash, const char* Reason)
 {
 	if (gLogApi.EventEnabled(__func__))
 	{
@@ -134,6 +134,10 @@ void CLogEvent::ClientDisconnect(edict_t* pEntity)
 			this->m_Event["Name"] = STRING(pEntity->v.netname);
 
 			this->m_Event["AuthId"] = g_engfuncs.pfnGetPlayerAuthId(pEntity);
+
+			this->m_Event["Crash"] = Crash;
+
+			this->m_Event["Reason"] = Reason ? Reason : "";
 		}
 
 		gLogApi.SendEvent(LogApi::Events::ClientDisconnect, this->m_Event);

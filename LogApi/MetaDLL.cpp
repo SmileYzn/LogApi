@@ -34,8 +34,6 @@ C_DLLEXPORT int GetEntityAPI2_Post(DLL_FUNCTIONS* pFunctionTable, int* interface
 
 	gDLL_FunctionTable_Post.pfnClientPutInServer = DLL_POST_ClientPutInServer;
 
-	gDLL_FunctionTable_Post.pfnClientDisconnect = DLL_POST_ClientDisconnect;
-
 	gDLL_FunctionTable_Post.pfnClientKill = DLL_POST_ClientKill;
 
 	gDLL_FunctionTable_Post.pfnClientUserInfoChanged = DLL_POST_ClientUserInfoChanged;
@@ -90,15 +88,6 @@ void DLL_POST_ClientPutInServer(edict_t* pEntity)
 	gLogPlayer.Update(pEntity);
 
 	gLogEvent.ClientPutInServer(pEntity);
-
-	RETURN_META(MRES_IGNORED);
-}
-
-void DLL_POST_ClientDisconnect(edict_t* pEntity)
-{
-	gLogPlayer.Disconnect(pEntity);
-
-	gLogEvent.ClientDisconnect(pEntity);
 
 	RETURN_META(MRES_IGNORED);
 }

@@ -137,10 +137,12 @@ class LogAPI
      * @param string $UserId            User Index
      * @param string $Name              Client Name
      * @param string $AuthId            Client AuthId
+     * @param bool $Crash		Client Crash Flag
+     * @param string $Reason		Reason of disconnect
      * 
      * @return mixed                    Array containing ServerExecute commands or null
      */
-    protected function ClientDisconnect($Event, $Server, $UserId, $Name, $AuthId)
+    protected function ClientDisconnect($Event, $Server, $UserId, $Name, $AuthId, $Crash, $Reason)
     {
         return null;
     }
