@@ -27,7 +27,7 @@ public:
 	void ServerInfo();
 	void ClientConnect(edict_t* pEntity, const char* pszName, const char* pszAddress, char szRejectReason[128]);
 	void ClientPutInServer(edict_t* pEntity);
-	void ClientDisconnect(edict_t* pEntity);
+	void ClientDisconnect(edict_t* pEntity, bool Crash, const char* Reason);
 	void ClientKill(edict_t* pEntity);
 	void ClientUserInfoChanged(edict_t* pEntity, char* InfoBuffer);
 	void ClientCommand(edict_t* pEntity);
