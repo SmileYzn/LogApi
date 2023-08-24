@@ -211,6 +211,19 @@ nlohmann::ordered_json CLogApi::GetServerInfo()
 
 	ServerInfo["Map"] = STRING(gpGlobals->mapname);
 
+	ServerInfo["Game"] = "Counter-Strike";
+
+	if (g_pGameRules)
+	{
+		if (CSGameRules()->m_GameDesc)
+		{
+			if (CSGameRules()->m_GameDesc[0u] != '\0')
+			{
+				ServerInfo["Game"] = CSGameRules()->m_GameDesc;
+			}
+		}
+	}
+
 	ServerInfo["MaxPlayers"] = gpGlobals->maxClients;
 
 	if (!gLogPlayer.m_Payers.empty())

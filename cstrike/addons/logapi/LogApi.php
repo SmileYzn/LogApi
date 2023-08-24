@@ -50,7 +50,7 @@ class LogAPI
      * 
      * @return mixed                    Array containing ServerExecute commands or null
      */
-    private function ServerActivate($Event, $Server, $EdictCount, $ClientMax)
+    protected function ServerActivate($Event, $Server, $EdictCount, $ClientMax)
     {
         return null;
     }
@@ -63,7 +63,7 @@ class LogAPI
      * 
      * @return mixed                    Array containing ServerExecute commands or null
      */
-    private function ServerDeactivate($Event, $Server)
+    protected function ServerDeactivate($Event, $Server)
     {
         return null;
     }
@@ -78,7 +78,7 @@ class LogAPI
      * 
      * @return mixed                    Array containing ServerExecute commands or null
      */
-    private function ServerAlertMessage($Event, $Server, $Type, $Message)
+    protected function ServerAlertMessage($Event, $Server, $Type, $Message)
     {
         return null;
     }
@@ -91,7 +91,7 @@ class LogAPI
      *
      * @return mixed                    Array containing ServerExecute commands or null
      */
-    private function ServerInfo($Event, $Server)
+    protected function ServerInfo($Event, $Server)
     {
         return null;
     }
@@ -108,7 +108,7 @@ class LogAPI
      * 
      * @return mixed                    Array containing ServerExecute commands or null
      */
-    private function ClientConnect($Event, $Server, $UserId, $Name, $AuthId, $Address)
+    protected function ClientConnect($Event, $Server, $UserId, $Name, $AuthId, $Address)
     {
         return null;
     }
@@ -124,7 +124,7 @@ class LogAPI
      * 
      * @return mixed                    Array containing ServerExecute commands or null
      */
-    private function ClientPutInServer($Event, $Server, $UserId, $Name, $AuthId)
+    protected function ClientPutInServer($Event, $Server, $UserId, $Name, $AuthId)
     {
         return null;
     }
@@ -140,7 +140,7 @@ class LogAPI
      * 
      * @return mixed                    Array containing ServerExecute commands or null
      */
-    private function ClientDisconnect($Event, $Server, $UserId, $Name, $AuthId)
+    protected function ClientDisconnect($Event, $Server, $UserId, $Name, $AuthId)
     {
         return null;
     }
@@ -156,7 +156,7 @@ class LogAPI
      * 
      * @return mixed                    Array containing ServerExecute commands or null
      */
-    private function ClientKill($Event, $Server, $UserId, $Name, $AuthId)
+    protected function ClientKill($Event, $Server, $UserId, $Name, $AuthId)
     {
         return null;
     }
@@ -173,7 +173,7 @@ class LogAPI
      * 
      * @return mixed                    Array containing ServerExecute commands or null
      */
-    private function ClientUserInfoChanged($Event, $Server, $UserId, $Name, $AuthId, $InfoBuffer)
+    protected function ClientUserInfoChanged($Event, $Server, $UserId, $Name, $AuthId, $InfoBuffer)
     {
         return null;
     }
@@ -191,7 +191,7 @@ class LogAPI
      * 
      * @return mixed                    Array containing ServerExecute commands or null
      */
-    private function ClientCommand($Event, $Server, $UserId, $Name, $AuthId, $Command, $Args)
+    protected function ClientCommand($Event, $Server, $UserId, $Name, $AuthId, $Command, $Args)
     {
         return null;
     }
@@ -209,7 +209,7 @@ class LogAPI
      * 
      * @return mixed                    Array containing ServerExecute commands or null
      */
-    private function ClientSay($Event, $Server, $UserId, $Name, $AuthId, $Type, $Message)
+    protected function ClientSay($Event, $Server, $UserId, $Name, $AuthId, $Type, $Message)
     {
         return null;
     }
