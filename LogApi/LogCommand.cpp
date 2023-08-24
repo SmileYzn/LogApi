@@ -9,7 +9,7 @@ void CLogCommand::ServerActivate()
 	g_engfuncs.pfnAddServerCommand("log_csay", this->CenterSay);
 	g_engfuncs.pfnAddServerCommand("log_psay", this->PrivateSay);
 	g_engfuncs.pfnAddServerCommand("log_motd", this->OpenMotd);
-	g_engfuncs.pfnAddServerCommand("log_info", this->ServerInfo);
+	g_engfuncs.pfnAddServerCommand("log_send_info", this->ServerInfo);
 }
 
 void CLogCommand::Say()
