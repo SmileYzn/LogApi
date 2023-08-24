@@ -241,20 +241,22 @@ void CLogEvent::ClientSay(edict_t* pEntity)
 
 		if (!FNullEnt(pEntity))
 		{
-			auto Type = g_engfuncs.pfnCmd_Argv(0);
+			std::string Type = g_engfuncs.pfnCmd_Argv(0) ? g_engfuncs.pfnCmd_Argv(0) : "";
 
-			if (Type)
+			if (!Type.empty())
 			{
-				if (Type[0u] != '\0')
+				if (Type.length() > 0)
 				{
-					auto Message = g_engfuncs.pfnCmd_Args();
-					
-					if (Message)
+					if (Type.compare("say") == 0 || Type.compare("say_team") == 0)
 					{
-						if (Message[0u] != '\0')
+						std::string Message = g_engfuncs.pfnCmd_Args() ? g_engfuncs.pfnCmd_Args() : "";
+
+						if (!Message.empty())
 						{
-							if (!Q_stricmp(Type, "say") || !Q_stricmp(Type, "say_team"))
+							if (Message.length() > 0)
 							{
+								Message.erase(std::remove(Message.begin(), Message.end(), '\"'),Message.end());
+
 								this->m_Event["Event"] = __func__;
 
 								this->m_Event["Server"] = gLogApi.GetServerInfo();

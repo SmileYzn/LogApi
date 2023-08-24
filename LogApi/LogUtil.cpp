@@ -92,6 +92,119 @@ void CLogUtil::ClientPrint(edict_t* pEntity, int msg_dest, const char* Format, .
 	}
 }
 
+void CLogUtil::TeamInfo(edict_t* pEntity, int playerIndex, const char* pszTeamName)
+{
+	static int iMsgTeamInfo;
+
+	if (iMsgTeamInfo || (iMsgTeamInfo = gpMetaUtilFuncs->pfnGetUserMsgID(PLID, "TeamInfo", NULL)))
+	{
+		g_engfuncs.pfnMessageBegin(MSG_ONE, iMsgTeamInfo, nullptr, pEntity);
+		g_engfuncs.pfnWriteByte(playerIndex);
+		g_engfuncs.pfnWriteString(pszTeamName);
+		g_engfuncs.pfnMessageEnd();
+	}
+}
+
+void CLogUtil::SayText(edict_t* pEntity, int Sender, const char* Format, ...)
+{
+	static int iMsgSayText;
+
+	if (iMsgSayText || (iMsgSayText = gpMetaUtilFuncs->pfnGetUserMsgID(PLID, "SayText", NULL)))
+	{
+		char Buffer[191] = { 0 };
+
+		va_list ArgList;
+		va_start(ArgList, Format);
+		Q_vsnprintf(Buffer, sizeof(Buffer), Format, ArgList);
+		va_end(ArgList);
+
+		if (Sender < PRINT_TEAM_BLUE || Sender > gpGlobals->maxClients)
+		{
+			Sender = PRINT_TEAM_DEFAULT;
+		}
+		else if (Sender < PRINT_TEAM_DEFAULT)
+		{
+			Sender = abs(Sender) + MAX_CLIENTS;
+		}
+
+		//this->ParseColors(Buffer);
+
+		if (!FNullEnt(pEntity))
+		{
+			if (!(pEntity->v.flags & FL_FAKECLIENT))
+			{
+				g_engfuncs.pfnMessageBegin(MSG_ONE, iMsgSayText, nullptr, pEntity);
+				g_engfuncs.pfnWriteByte(Sender ? Sender : ENTINDEX(pEntity));
+				g_engfuncs.pfnWriteString("%s");
+				g_engfuncs.pfnWriteString(Buffer);
+				g_engfuncs.pfnMessageEnd();
+			}
+		}
+		else
+		{
+			for (int i = 1; i <= gpGlobals->maxClients; ++i)
+			{
+				edict_t* pTempEntity = INDEXENT(i);
+
+				if (!FNullEnt(pTempEntity))
+				{
+					if (!(pTempEntity->v.flags & FL_FAKECLIENT))
+					{
+						g_engfuncs.pfnMessageBegin(MSG_ONE, iMsgSayText, nullptr, pTempEntity);
+						g_engfuncs.pfnWriteByte(Sender ? Sender : i);
+						g_engfuncs.pfnWriteString("%s");
+						g_engfuncs.pfnWriteString(Buffer);
+						g_engfuncs.pfnMessageEnd();
+					}
+				}
+			}
+		}
+	}
+}
+
+int CLogUtil::ParseColors(char* Buffer)
+{
+	size_t len = strlen(Buffer);
+
+	int offs = 0;
+
+	if (len > 0)
+	{
+		int c;
+
+		for (size_t i = 0; i < len; i++)
+		{
+			c = Buffer[i];
+
+			if (c == '^' && (i != len - 1))
+			{
+				c = Buffer[++i];
+
+				if (c == 'n' || c == 't' || (c >= '1' && c <= '4'))
+				{
+					switch (c)
+					{
+						case '1': c = '\x01'; break;
+						case '2': c = '\x02'; break;
+						case '3': c = '\x03'; break;
+						case '4': c = '\x04'; break;
+						case 'n': c = '\n'; break;
+						case 't': c = '\t'; break;
+					}
+
+					offs++;
+				}
+			}
+
+			Buffer[i - offs] = c;
+		}
+
+		Buffer[len - offs] = '\0';
+	}
+
+	return offs;
+}
+
 unsigned short CLogUtil::FixedUnsigned16(float value, float scale)
 {
 	int output = value * scale;
@@ -115,45 +228,57 @@ CBasePlayer* CLogUtil::FindPlayer(std::string Target)
 	{
 		if (Target.length() > 1)
 		{
-			std::string Find = "";
-
-			std::transform(Target.begin(), Target.end(), Target.begin(), [](unsigned char character)
+			if (Target[0u] == '#')
 			{
-				return std::tolower(character);
-			});
-
-			for (auto i = 1; i <= gpGlobals->maxClients; i++)
-			{
-				auto Player = UTIL_PlayerByIndexSafe(i);
-
-				if (Player)
+				if (!Target.substr(1).empty())
 				{
-					if (!Player->IsDormant())
-					{
-						if (Target[0u] == '#')
-						{
-							Find = Target.substr(1);
+					auto Find = Q_atoi(Target.substr(1).c_str());
 
-							if (!Find.empty())
+					if (Find > 0)
+					{
+						for (auto i = 1; i <= gpGlobals->maxClients; i++)
+						{
+							auto Player = UTIL_PlayerByIndexSafe(i);
+
+							if (Player)
 							{
-								if (g_engfuncs.pfnGetPlayerUserId(Player->edict()) == Q_atoi(Find.c_str()))
+								if (!Player->IsDormant())
 								{
-									return Player;
+									if (g_engfuncs.pfnGetPlayerUserId(Player->edict()) == Find)
+									{
+										return Player;
+									}
 								}
 							}
 						}
-						else
-						{
-							Find = STRING(Player->edict()->v.netname);
+					}
+				}
+			}
+			else
+			{
+				std::transform(Target.begin(), Target.end(), Target.begin(), [](unsigned char character)
+				{
+					return std::tolower(character);
+				});
 
-							if (!Find.empty())
+				for (auto i = 1; i <= gpGlobals->maxClients; i++)
+				{
+					auto Player = UTIL_PlayerByIndexSafe(i);
+
+					if (Player)
+					{
+						if (!Player->IsDormant())
+						{
+							std::string Name = STRING(Player->edict()->v.netname);
+
+							if (!Name.empty())
 							{
-								std::transform(Find.begin(), Find.end(), Find.begin(), [](unsigned char character)
+								std::transform(Name.begin(), Name.end(), Name.begin(), [](unsigned char character)
 								{
 									return std::tolower(character);
 								});
 
-								if (Find.find(Target) != std::string::npos)
+								if (Name.find(Target) != std::string::npos)
 								{
 									return Player;
 								}
@@ -325,15 +450,20 @@ const char* CLogUtil::GetAuthId(edict_t* pEntity)
 {
 	if (!FNullEnt(pEntity))
 	{
-		if (!(pEntity->v.flags & FL_FAKECLIENT))
+		auto Auth = g_engfuncs.pfnGetPlayerAuthId(pEntity);
+
+		if (Auth)
 		{
-			if (!(pEntity->v.flags & FL_PROXY))
+			if (Auth[0u] != '\0')
 			{
-				return g_engfuncs.pfnGetPlayerAuthId(pEntity);
+				if (!Q_stricmp(Auth, "BOT"))
+				{
+					return STRING(pEntity->v.netname);
+				}
+
+				return Auth;
 			}
 		}
-
-		return STRING(pEntity->v.netname);
 	}
 
 	return nullptr;

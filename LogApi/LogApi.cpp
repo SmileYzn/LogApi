@@ -213,17 +213,16 @@ nlohmann::ordered_json CLogApi::GetServerInfo()
 
 	ServerInfo["MaxPlayers"] = gpGlobals->maxClients;
 
-	auto Players = gLogPlayer.GetPlayers();
-
-	if (!Players.empty())
+	if (!gLogPlayer.m_Payers.empty())
 	{
-		for (auto const& Player : Players)
+		for (auto const& Player : gLogPlayer.m_Payers)
 		{
-			ServerInfo[Player.first] =
+			ServerInfo["Players"][Player.first] =
 			{
 				{"Auth", Player.first},
 				{"Name", Player.second.Name},
 				{"Address", Player.second.Address},
+				{"UserId", Player.second.UserId},
 				{"Team", Player.second.Team},
 				{"Frags", Player.second.Frags},
 				{"Deaths", Player.second.Deaths},

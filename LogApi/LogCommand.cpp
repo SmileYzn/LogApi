@@ -22,7 +22,7 @@ void CLogCommand::Say()
 		{
 			if (Message[0u] != '\0')
 			{
-				gLogUtil.ClientPrint(nullptr, PRINT_CHAT, "%s", Message);
+				gLogUtil.SayText(nullptr, PRINT_TEAM_DEFAULT, "%s", Message);
 				return;
 			}
 		}
@@ -89,9 +89,9 @@ void CLogCommand::PrivateSay()
 
 						if (Player)
 						{
-							Message.erase(0, Target.length());
+							Message.erase(0, Target.length() + 1);
 
-							gLogUtil.ClientPrint(Player->edict(), PRINT_CHAT, "%s", Message.c_str());
+							gLogUtil.SayText(Player->edict(), Player->entindex(), "%s", Message.c_str());
 						}
 						else
 						{
@@ -128,7 +128,7 @@ void CLogCommand::OpenMotd()
 
 						if (Player)
 						{
-							Message.erase(0, Target.length());
+							Message.erase(0, Target.length() + 1);
 
 							char Path[MAX_MOTD_LENGTH] = { 0 };
 

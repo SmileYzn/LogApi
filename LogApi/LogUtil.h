@@ -7,12 +7,21 @@ constexpr auto PRINT_CHAT = 3;
 constexpr auto PRINT_CENTER = 4;
 constexpr auto PRINT_RADIO = 5;
 
+// Print SayText Colors
+constexpr auto PRINT_TEAM_DEFAULT = 0;
+constexpr auto PRINT_TEAM_GREY = -1;
+constexpr auto PRINT_TEAM_RED = -2;
+constexpr auto PRINT_TEAM_BLUE = -3;
+
 class CLogUtil
 {
 public:
 	cvar_t* CvarRegister(const char* Name, const char* Value);
 	void ServerExecute(std::string Command);
 	void ClientPrint(edict_t* pEntity, int msg_dest, const char* Format, ...);
+	void TeamInfo(edict_t* pEntity, int playerIndex, const char* pszTeamName);
+	void SayText(edict_t* pEntity, int Sender, const char* Format, ...);
+	int ParseColors(char* Buffer);
 	CBasePlayer* FindPlayer(std::string Target);
 	unsigned short FixedUnsigned16(float value, float scale);
 	short FixedSigned16(float value, float scale);
