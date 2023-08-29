@@ -82,8 +82,6 @@ bool ReAPI_Init()
 
 	g_RehldsSvs = g_RehldsApi->GetServerStatic();
 
-	g_RehldsHookchains->SV_ConnectClient()->registerHook(ReAPI_SV_ConnectClient);
-
 	g_RehldsHookchains->SV_DropClient()->registerHook(ReAPI_SV_DropClient);
 
 	return true;
@@ -91,8 +89,6 @@ bool ReAPI_Init()
 
 bool ReAPI_Stop()
 {
-	g_RehldsHookchains->SV_ConnectClient()->unregisterHook(ReAPI_SV_ConnectClient);
-
 	g_RehldsHookchains->SV_DropClient()->unregisterHook(ReAPI_SV_DropClient);
 
 	return true;
