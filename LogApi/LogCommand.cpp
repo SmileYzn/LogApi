@@ -47,7 +47,7 @@ void CLogCommand::TeamSay()
 		}
 	}
 
-	LOG_CONSOLE(PLID, "[%s] Usage: log_say <message>", Plugin_info.logtag);
+	LOG_CONSOLE(PLID, "[%s] Usage: log_tsay <message>", Plugin_info.logtag);
 }
 
 void CLogCommand::CenterSay()
@@ -66,7 +66,7 @@ void CLogCommand::CenterSay()
 		}
 	}
 
-	LOG_CONSOLE(PLID, "[%s] Usage: log_cay <message>", Plugin_info.logtag);
+	LOG_CONSOLE(PLID, "[%s] Usage: log_csay <message>", Plugin_info.logtag);
 }
 
 void CLogCommand::PrivateSay()
