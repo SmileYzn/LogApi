@@ -173,20 +173,32 @@ void CLogApi::EventResult(int EventIndex, nlohmann::ordered_json Data)
 	{
 		this->ServerMenu(EventIndex, Data);
 	}
+
+	// Check if has event 'ServerConsoleLog' result from api
+	if (Data.contains("ServerConsoleLog"))
+	{
+		this->ServerConsoleLog(EventIndex, Data);
+	}
+
+	if (Data.contains("ServerSay"))
+	{
+		this->ServerSay(EventIndex, Data);
+	}
 }
 
+// Execute server command from result
 void CLogApi::ServerExecute(int EventIndex, nlohmann::ordered_json Data)
 {
 	// If is not empty
-	if (!Data["ServerExecute"].empty())
+	if (!Data[__func__].empty())
 	{
 		try
 		{
 			// Check if event result is string
-			if (Data["ServerExecute"].is_string())
+			if (Data[__func__].is_string())
 			{
 				// Get Command
-				auto String = Data["ServerExecute"].get<std::string>();
+				auto String = Data[__func__].get<std::string>();
 
 				// If command is not empty
 				if (!String.empty())
@@ -197,10 +209,10 @@ void CLogApi::ServerExecute(int EventIndex, nlohmann::ordered_json Data)
 			}
 			//
 			// Check if event result is array
-			else if (Data["ServerExecute"].is_array())
+			else if (Data[__func__].is_array())
 			{
 				// Loop commands
-				for (auto it = Data["ServerExecute"].begin(); it != Data["ServerExecute"].end(); ++it)
+				for (auto it = Data[__func__].begin(); it != Data[__func__].end(); ++it)
 				{
 					// If is strimg
 					if (it.value().is_string())
@@ -229,6 +241,7 @@ void CLogApi::ServerExecute(int EventIndex, nlohmann::ordered_json Data)
 	}
 }
 
+// Open menu from result
 void CLogApi::ServerMenu(int EventIndex, nlohmann::ordered_json Data)
 {
 	if (!Data["ServerMenu"].empty())
@@ -293,6 +306,7 @@ void CLogApi::ServerMenu(int EventIndex, nlohmann::ordered_json Data)
 	}
 }
 
+// Open menu function
 void CLogApi::Menu(int EntityIndex, std::string Title, bool Exit, std::string Callback, nlohmann::ordered_json Items)
 {
 	auto Player = UTIL_PlayerByIndexSafe(EntityIndex);
@@ -332,11 +346,133 @@ void CLogApi::Menu(int EntityIndex, std::string Title, bool Exit, std::string Ca
 	}
 }
 
+// Open menu function handler
 void CLogApi::MenuHandle(int EntityIndex, std::string Callback, P_MENU_ITEM Item)
 {
 	gLogEvent.ClientMenuHandle(INDEXENT(EntityIndex), Callback, Item);
 }
 
+// Print to server console from result
+void CLogApi::ServerConsoleLog(int EventIndex, nlohmann::ordered_json Data)
+{
+	// If is not empty
+	if (!Data[__func__].empty())
+	{
+		try
+		{
+			// Check if event result is string
+			if (Data[__func__].is_string())
+			{
+				// Get Command
+				auto Message = Data[__func__].get<std::string>();
+
+				// If command is not empty
+				if (!Message.empty())
+				{
+					// Execute command
+					gLogUtil.ClientPrint(nullptr, PRINT_CONSOLE, "%s", Message.c_str());
+				}
+			}
+			//
+			// Check if event result is array
+			else if (Data[__func__].is_object())
+			{
+				// If is not empty
+				if (!Data[__func__]["EntityId"].empty() && !Data[__func__]["Message"].empty())
+				{
+					// Entity pointer
+					edict_t* pEntity = nullptr;
+
+					// Entity index
+					auto EntityId = Data[__func__]["EntityId"].get<int>();
+
+					// Get message string
+					auto Message = Data[__func__]["Message"].get<std::string>();
+
+					// If has entity index
+					if (EntityId > 0)
+					{
+						// Get entity pointer
+						pEntity = FNullEnt(INDEXENT(EntityId)) ? INDEXENT(EntityId) : nullptr;
+					}
+
+					// If is not empty
+					if (!Message.empty())
+					{
+						// Print to entity
+						gLogUtil.ClientPrint(pEntity, PRINT_CONSOLE, "%s", Message.c_str());
+					}
+				}
+			}
+		}
+		catch (const nlohmann::ordered_json::exception& e)
+		{
+			LOG_CONSOLE(PLID, "[%s] %s", __func__, e.what());
+		}
+	}
+}
+
+// Print to player chat from result
+void CLogApi::ServerSay(int EventIndex, nlohmann::ordered_json Data)
+{
+	// If is not empty
+	if (!Data[__func__].empty())
+	{
+		try
+		{
+			// Check if event result is string
+			if (Data[__func__].is_string())
+			{
+				// Get Command
+				auto Message = Data[__func__].get<std::string>();
+
+				// If command is not empty
+				if (!Message.empty())
+				{
+					// Execute command
+					gLogUtil.SayText(nullptr, PRINT_TEAM_DEFAULT, "%s", Message.c_str());
+				}
+			}
+			//
+			// Check if event result is array
+			else if (Data[__func__].is_object())
+			{
+				// If is not empty
+				if (!Data[__func__]["EntityId"].empty() && !Data[__func__]["Message"].empty())
+				{
+					// Entity pointer
+					edict_t* pEntity = nullptr;
+
+					// Entity index
+					auto EntityId = Data[__func__]["EntityId"].get<int>();
+
+					// Get message string
+					auto Message = Data[__func__]["Message"].get<std::string>();
+
+					// If has entity index
+					if (EntityId > 0)
+					{
+						// Get entity pointer
+						pEntity = FNullEnt(INDEXENT(EntityId)) ? INDEXENT(EntityId) : nullptr;
+					}
+
+					// If is not empty
+					if (!Message.empty())
+					{
+						// Print to entity
+						gLogUtil.SayText(pEntity, ENTINDEX(pEntity), "%s", Message.c_str());
+					}
+				}
+			}
+		}
+		catch (const nlohmann::ordered_json::exception& e)
+		{
+			LOG_CONSOLE(PLID, "[%s] %s", __func__, e.what());
+		}
+	}
+}
+
+// Get server info as JSON data
 nlohmann::ordered_json CLogApi::GetServerInfo()
 {
 	nlohmann::ordered_json ServerInfo;

@@ -39,6 +39,12 @@ public:
 	// Menu Handle
 	static void MenuHandle(int EntityIndex, std::string Callback, P_MENU_ITEM Item);
 
+	// Server Console Log
+	void ServerConsoleLog(int EventIndex, nlohmann::ordered_json Data);
+
+	// Server Say Text
+	void ServerSay(int EventIndex, nlohmann::ordered_json Data);
+
 	// Get Server info
 	nlohmann::ordered_json GetServerInfo();
 
