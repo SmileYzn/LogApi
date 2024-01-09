@@ -5,6 +5,7 @@ typedef struct S_PLAYER_INFO
 	std::string Auth;
 	std::string Name;
 	std::string Address;
+	int EntityId;
 	int UserId;
 	int Team;
 	int Frags;

@@ -11,11 +11,54 @@ C_DLLEXPORT int GetEntityAPI2(DLL_FUNCTIONS* pFunctionTable, int* interfaceVersi
 {
 	memset(&gDLL_FunctionTable_Pre, 0, sizeof(DLL_FUNCTIONS));
 
-	// Register Functions Here //
+	gDLL_FunctionTable_Pre.pfnClientCommand = DLL_PRE_ClientCommand;
 
 	memcpy(pFunctionTable, &gDLL_FunctionTable_Pre, sizeof(DLL_FUNCTIONS));
 
 	return 1;
+}
+
+void DLL_PRE_ClientCommand(edict_t* pEntity)
+{
+	if (pEntity)
+	{
+		if (!FNullEnt(pEntity))
+		{
+			auto pCmd = g_engfuncs.pfnCmd_Argv(0);
+
+			if (pCmd)
+			{
+				if (pCmd[0u] != '\0')
+				{
+					if (!Q_strcmp(pCmd, "menuselect"))
+					{
+						auto pArg = g_engfuncs.pfnCmd_Argv(1);
+
+						if (pArg)
+						{
+							if (pArg[0u] != '\0')
+							{
+								auto Player = UTIL_PlayerByIndexSafe(ENTINDEX(pEntity));
+
+								if (Player)
+								{
+									if (Player->m_iMenu == Menu_OFF)
+									{
+										if (gLogMenu[Player->entindex()].Handle(Player->entindex(), Q_atoi(pArg)))
+										{
+											RETURN_META(MRES_SUPERCEDE);
+										}
+									}
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+
+	RETURN_META(MRES_IGNORED);
 }
 #pragma endregion
 

@@ -9,6 +9,7 @@ public:
 	static void TeamSay();
 	static void CenterSay();
 	static void PrivateSay();
+	static void ConsoleLog();
 	static void OpenMotd();
 	static void ServerInfo();
 

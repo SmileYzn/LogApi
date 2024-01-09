@@ -29,6 +29,8 @@ public:
 	void HudMessage(edict_t* pEntity, hudtextparms_t textparms, const char* Format, ...);
 	void ShowMotd(edict_t* pEntity, char* Motd, int MotdLength);
 	const char* GetAuthId(edict_t* pEntity);
+	void ReplaceAll(std::string& String, const std::string& From, const std::string& To);
+	std::vector<CBasePlayer*> GetPlayers();
 private:
 	std::map<std::string, cvar_t> m_Cvar;
 };

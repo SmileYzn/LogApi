@@ -9,5 +9,6 @@
 	"ClientKill": 			false,
 	"ClientUserInfoChanged": 	false,
 	"ClientCommand": 		false,
-	"ClientSay": 			false
+	"ClientSay": 			false,
+	"ClientMenuHandle":		false,
 }

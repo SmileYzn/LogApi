@@ -8,6 +8,7 @@ void CLogCommand::ServerActivate()
 	g_engfuncs.pfnAddServerCommand("log_tsay", this->TeamSay);
 	g_engfuncs.pfnAddServerCommand("log_csay", this->CenterSay);
 	g_engfuncs.pfnAddServerCommand("log_psay", this->PrivateSay);
+	g_engfuncs.pfnAddServerCommand("log_console", this->ConsoleLog);
 	g_engfuncs.pfnAddServerCommand("log_motd", this->OpenMotd);
 	g_engfuncs.pfnAddServerCommand("log_send_info", this->ServerInfo);
 }
@@ -106,6 +107,45 @@ void CLogCommand::PrivateSay()
 	}
 
 	LOG_CONSOLE(PLID, "[%s] Usage: log_psay <name or #userid> <message>", Plugin_info.logtag);
+}
+
+void CLogCommand::ConsoleLog()
+{
+	if (g_engfuncs.pfnCmd_Argc() >= 3)
+	{
+		std::string Target = g_engfuncs.pfnCmd_Argv(1);
+
+		if (!Target.empty())
+		{
+			if (Target.length() > 1)
+			{
+				std::string Message = g_engfuncs.pfnCmd_Args();
+
+				if (!Message.empty())
+				{
+					if (Message.length() > 0)
+					{
+						auto Player = gLogUtil.FindPlayer(Target);
+
+						if (Player)
+						{
+							Message.erase(0, Target.length() + 1);
+
+							gLogUtil.ClientPrint(Player->edict(), PRINT_CONSOLE, "%s", Message.c_str());
+						}
+						else
+						{
+							LOG_CONSOLE(PLID, "[%s] Client with that name or userid '%s' not found.", Plugin_info.logtag, Target.c_str());
+						}
+
+						return;
+					}
+				}
+			}
+		}
+	}
+
+	LOG_CONSOLE(PLID, "[%s] Usage: log_console <name or #userid> <message>", Plugin_info.logtag);
 }
 
 void CLogCommand::OpenMotd()

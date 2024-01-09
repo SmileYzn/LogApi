@@ -80,6 +80,7 @@
 #include "include/json.hpp"
 
 // Log API
+#include "LogMenu.h"
 #include "LogApi.h"
 #include "LogCommand.h"
 #include "LogCurl.h"

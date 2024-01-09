@@ -7,12 +7,12 @@ ping 127.0.0.1 -n 2 > nul
 
 set "outputFile=..\Release\logapi_mm.dll"
 
-set "copyPath=D:\Files\Desktop\hlds\hlds\cstrike\addons\logapi"
+set "copyPath=D:\Files\Desktop\hlds\cstrike\addons\logapi"
 
 if exist %copyPath% (copy %outputFile% %copyPath%)
 
 set "hldsParam=-console -game cstrike -secure -pingboost 3 -master -bots +port 27020 +map de_inferno +maxplayers 32 +sys_ticrate 1000"
 
-set "hldsPath=D:\Files\Desktop\hlds\hlds"
+set "hldsPath=D:\Files\Desktop\hlds"
 
 if exist %hldsPath% (start /min /d "%hldsPath%" hlds.exe %hldsParam%)

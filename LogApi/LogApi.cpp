@@ -43,7 +43,7 @@ void CLogApi::ServerActivate()
 			fp.seekg(0, std::ios::beg);
 
 			// Read data
-			auto json = nlohmann::json::parse(fp, nullptr, true, true);
+			auto json = nlohmann::ordered_json::parse(fp, nullptr, true, true);
 
 			// Loop each item
 			for (auto const& event : json.items())
@@ -58,7 +58,7 @@ void CLogApi::ServerActivate()
 			LOG_CONSOLE(PLID, "[%s] Failed to open file: %s", __func__, LOG_API_FILE_EVENTS);
 		}
 	}
-	catch (nlohmann::json::parse_error& e)
+	catch (const nlohmann::ordered_json::parse_error& e)
 	{
 		// JSON exeption errors
 		LOG_CONSOLE(PLID, "[%s] %s", __func__, e.what());
@@ -130,20 +130,30 @@ void CLogApi::CallbackResult(CURL* ch, size_t Size, const char* Memory, int Even
 			{
 				if (Memory)
 				{
-					try
+					if (Memory[0u] != '\0')
 					{
-						auto Result = nlohmann::ordered_json::parse(Memory, nullptr, true, true);
-
-						if (!Result.empty())
+						try
 						{
-							gLogApi.EventResult(EventIndex, Result);
+							auto Result = nlohmann::ordered_json::parse(Memory, nullptr, true, true);
+
+							if (!Result.empty())
+							{
+								if (Result.size() > 0)
+								{
+									gLogApi.EventResult(EventIndex, Result);
+								}
+							} 
+						}
+						catch (const nlohmann::ordered_json::parse_error& e)
+						{
+							LOG_CONSOLE(PLID, "[%s] %s", __func__, e.what());
 						}
 					}
-					catch (nlohmann::ordered_json::parse_error& e)
-					{
-						LOG_CONSOLE(PLID, "[%s] %s", __func__, e.what());
-					}
 				}
+			}
+			else
+			{
+				LOG_CONSOLE(PLID, "[%s] Unknow response from server: HTTP Code %d, check log_api_address.", __func__, HttpResponseCode);
 			}
 		}
 	}
@@ -152,17 +162,31 @@ void CLogApi::CallbackResult(CURL* ch, size_t Size, const char* Memory, int Even
 // Parse Event Result
 void CLogApi::EventResult(int EventIndex, nlohmann::ordered_json Data)
 {
-	// Check if has event result from api
+	// Check if has event 'ServerExecute' result from api
 	if (Data.contains("ServerExecute"))
 	{
-		// If is not empty
-		if (!Data["ServerExecute"].empty())
+		this->ServerExecute(EventIndex, Data);
+	}
+
+	// Check if has event 'ServerMenu' result from api
+	if (Data.contains("ServerMenu"))
+	{
+		this->ServerMenu(EventIndex, Data);
+	}
+}
+
+void CLogApi::ServerExecute(int EventIndex, nlohmann::ordered_json Data)
+{
+	// If is not empty
+	if (!Data["ServerExecute"].empty())
+	{
+		try
 		{
 			// Check if event result is string
 			if (Data["ServerExecute"].is_string())
 			{
 				// Get Command
-				auto String = std::string(Data["ServerExecute"]);
+				auto String = Data["ServerExecute"].get<std::string>();
 
 				// If command is not empty
 				if (!String.empty())
@@ -198,7 +222,119 @@ void CLogApi::EventResult(int EventIndex, nlohmann::ordered_json Data)
 				}
 			}
 		}
+		catch (const nlohmann::ordered_json::exception& e)
+		{
+			LOG_CONSOLE(PLID, "[%s] %s", __func__, e.what());
+		}
 	}
+}
+
+void CLogApi::ServerMenu(int EventIndex, nlohmann::ordered_json Data)
+{
+	if (!Data["ServerMenu"].empty())
+	{
+		if (Data["ServerMenu"].is_object())
+		{
+			if (!Data["ServerMenu"]["Items"].empty())
+			{
+				if (Data["ServerMenu"]["Items"].is_array())
+				{
+					try
+					{
+						auto Title = Data["ServerMenu"]["Title"].get<std::string>();
+
+						auto Exit = Data["ServerMenu"]["Exit"].get<bool>();
+
+						auto Callback = Data["ServerMenu"]["Callback"].get<std::string>();
+
+						if (Data["ServerMenu"]["EntityId"].is_number_integer())
+						{
+							auto EntityId = Data["ServerMenu"]["EntityId"].get<int>();
+
+							if (EntityId)
+							{
+								this->Menu(EntityId, Title, Exit, Callback, Data["ServerMenu"]["Items"]);
+							}
+							else
+							{
+								auto Players = gLogUtil.GetPlayers();
+
+								if (!Players.empty())
+								{
+									for (auto Player : Players)
+									{
+										this->Menu(Player->entindex(), Title, Exit, Callback, Data["ServerMenu"]["Items"]);
+									}
+								}
+							}
+						}
+						else if (Data["ServerMenu"]["EntityId"].is_array())
+						{
+							for (auto it = Data["ServerMenu"]["EntityId"].begin(); it != Data["ServerMenu"]["EntityId"].end(); ++it)
+							{
+								if (it.value().is_number_integer())
+								{
+									this->Menu(it.value().get<int>(), Title, Exit, Callback, Data["ServerMenu"]["Items"]);
+								}
+							}
+						}
+					}
+					catch (const nlohmann::ordered_json::exception& e)
+					{
+						LOG_CONSOLE(PLID, "[%s] %s", __func__, e.what());
+					}
+				}
+				else
+				{
+					LOG_CONSOLE(PLID, "[%s] Menu is empty", __func__);
+				}
+			}
+		}
+	}
+}
+
+void CLogApi::Menu(int EntityIndex, std::string Title, bool Exit, std::string Callback, nlohmann::ordered_json Items)
+{
+	auto Player = UTIL_PlayerByIndexSafe(EntityIndex);
+
+	if (Player)
+	{
+		if (!Player->IsBot())
+		{
+			if (Player->IsPlayer())
+			{
+				gLogMenu[EntityIndex].Create(Title, Callback, Exit, (void*)gLogApi.MenuHandle);
+
+				for (auto it = Items.begin(); it != Items.end(); ++it)
+				{
+					auto Option = it.value();
+
+					if (Option.is_object())
+					{
+						if (!Option.empty())
+						{
+							auto Info = Option["Info"].get<std::string>();
+
+							auto Text = Option["Text"].get<std::string>();
+
+							auto Disabled = Option["Disabled"].get<bool>();
+
+							auto Extra = Option["Extra"].get<std::string>();
+
+							gLogMenu[EntityIndex].AddItem(Info, Text, Disabled, Extra);
+						}
+					}
+				}
+
+				gLogMenu[EntityIndex].Show(EntityIndex);
+			}
+		}
+	}
+}
+
+void CLogApi::MenuHandle(int EntityIndex, std::string Callback, P_MENU_ITEM Item)
+{
+	gLogEvent.ClientMenuHandle(INDEXENT(EntityIndex), Callback, Item);
 }
 
 nlohmann::ordered_json CLogApi::GetServerInfo()
@@ -232,6 +368,7 @@ nlohmann::ordered_json CLogApi::GetServerInfo()
 		{
 			ServerInfo["Players"][Player.first] =
 			{
+				{"EntityId", Player.second.EntityId},
 				{"Auth", Player.first},
 				{"Name", Player.second.Name},
 				{"Address", Player.second.Address},

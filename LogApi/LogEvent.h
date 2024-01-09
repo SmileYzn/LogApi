@@ -15,6 +15,7 @@ namespace LogApi
 		ClientUserInfoChanged,
 		ClientCommand,
 		ClientSay,
+		ClientMenuHandle
 	};
 }
 
@@ -32,6 +33,7 @@ public:
 	void ClientUserInfoChanged(edict_t* pEntity, char* InfoBuffer);
 	void ClientCommand(edict_t* pEntity);
 	void ClientSay(edict_t* pEntity);
+	void ClientMenuHandle(edict_t* pEntity, std::string Callback, P_MENU_ITEM Item);
 private:
 	nlohmann::ordered_json m_Event;
 };

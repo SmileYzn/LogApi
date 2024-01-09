@@ -29,6 +29,8 @@ void CLogPlayer::Connect(edict_t* pEntity, const char* pszName, const char* pszA
 				}
 			}
 
+			this->m_Players[Auth].EntityId = ENTINDEX(pEntity);
+
 			this->m_Players[Auth].UserId = g_engfuncs.pfnGetPlayerUserId(pEntity);
 
 			this->m_Players[Auth].Team = pEntity->v.team;
@@ -68,6 +70,8 @@ void CLogPlayer::Update(edict_t* pEntity)
 
 		if (Auth)
 		{
+			this->m_Players[Auth].EntityId = ENTINDEX(pEntity);
+
 			this->m_Players[Auth].Auth = Auth;
 
 			this->m_Players[Auth].Name = STRING(pEntity->v.netname);

@@ -27,6 +27,18 @@ public:
 	// Parse Event Result
 	void EventResult(int EventIndex, nlohmann::ordered_json Result);
 
+	// Server Execute
+	void ServerExecute(int EventIndex, nlohmann::ordered_json Data);
+
+	// Server Meu
+	void ServerMenu(int EventIndex, nlohmann::ordered_json Data);
+
+	// Open  Menu
+	void Menu(int EntityIndex, std::string Title, bool Exit, std::string Callback, nlohmann::ordered_json Items);
+
+	// Menu Handle
+	static void MenuHandle(int EntityIndex, std::string Callback, P_MENU_ITEM Item);
+
 	// Get Server info
 	nlohmann::ordered_json GetServerInfo();
 

@@ -127,7 +127,7 @@ void CLogUtil::SayText(edict_t* pEntity, int Sender, const char* Format, ...)
 			Sender = abs(Sender) + MAX_CLIENTS;
 		}
 
-		//this->ParseColors(Buffer);
+		this->ParseColors(Buffer);
 
 		if (!FNullEnt(pEntity))
 		{
@@ -467,4 +467,39 @@ const char* CLogUtil::GetAuthId(edict_t* pEntity)
 	}
 
 	return nullptr;
+}
+
+void CLogUtil::ReplaceAll(std::string& String, const std::string& From, const std::string& To)
+{
+	if (!From.empty())
+	{
+		size_t StartPos = 0;
+
+		while ((StartPos = String.find(From, StartPos)) != std::string::npos)
+		{
+			String.replace(StartPos, From.length(), To);
+
+			StartPos += To.length();
+		}
+	}
+}
+
+std::vector<CBasePlayer*> CLogUtil::GetPlayers()
+{
+	std::vector<CBasePlayer*> Players;
+
+	for (int i = 1; i <= gpGlobals->maxClients; ++i)
+	{
+		auto Player = UTIL_PlayerByIndexSafe(i);
+
+		if (Player)
+		{
+			if (Player->IsPlayer() && !Player->IsDormant())
+			{
+				Players.push_back(Player);
+			}
+		}
+	}
+
+	return Players;
 }

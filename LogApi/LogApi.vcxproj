@@ -18,6 +18,7 @@
     <ClCompile Include="LogCommand.cpp" />
     <ClCompile Include="LogCurl.cpp" />
     <ClCompile Include="LogEvent.cpp" />
+    <ClCompile Include="LogMenu.cpp" />
     <ClCompile Include="LogPlayer.cpp" />
     <ClCompile Include="LogUtil.cpp" />
     <ClCompile Include="MetaDLL.cpp" />
@@ -35,6 +36,7 @@
     <ClInclude Include="LogCommand.h" />
     <ClInclude Include="LogCurl.h" />
     <ClInclude Include="LogEvent.h" />
+    <ClInclude Include="LogMenu.h" />
     <ClInclude Include="LogPlayer.h" />
     <ClInclude Include="LogUtil.h" />
     <ClInclude Include="MetaDLL.h" />
