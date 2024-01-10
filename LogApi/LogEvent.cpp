@@ -69,77 +69,57 @@ void CLogEvent::ServerInfo()
 	}
 }
 
-void CLogEvent::ClientConnect(edict_t* pEntity, const char* pszName, const char* pszAddress, char szRejectReason[128])
+void CLogEvent::ClientConnect(edict_t* pEdict, const char* pszName, const char* pszAddress, char szRejectReason[128])
 {
 	if (gLogApi.EventEnabled(__func__))
 	{
 		this->m_Event.clear();
 
-		if (!FNullEnt(pEntity))
+		if (!FNullEnt(pEdict))
 		{
 			this->m_Event["Event"] = __func__;
 
 			this->m_Event["Server"] = gLogApi.GetServerInfo();
 
-			this->m_Event["EntityId"] = ENTINDEX(pEntity);
-
-			this->m_Event["UserId"] = g_engfuncs.pfnGetPlayerUserId(pEntity);
-
-			this->m_Event["Name"] = pszName;
-
-			this->m_Event["AuthId"] = g_engfuncs.pfnGetPlayerAuthId(pEntity);
-
-			this->m_Event["Address"] = pszAddress;
+			this->m_Event["Player"] = gLogPlayer.GetPlayerJson(pEdict);
 		}
 
 		gLogApi.SendEvent(LogApi::Events::ClientConnect, this->m_Event);
 	}
 }
 
-void CLogEvent::ClientPutInServer(edict_t* pEntity)
+void CLogEvent::ClientPutInServer(edict_t* pEdict)
 {
 	if (gLogApi.EventEnabled(__func__))
 	{
 		this->m_Event.clear();
 
-		if (!FNullEnt(pEntity))
+		if (!FNullEnt(pEdict))
 		{
 			this->m_Event["Event"] = __func__;
 
 			this->m_Event["Server"] = gLogApi.GetServerInfo();
 
-			this->m_Event["EntityId"] = ENTINDEX(pEntity);
-
-			this->m_Event["UserId"] = g_engfuncs.pfnGetPlayerUserId(pEntity);
-
-			this->m_Event["Name"] = STRING(pEntity->v.netname);
-
-			this->m_Event["AuthId"] = g_engfuncs.pfnGetPlayerAuthId(pEntity);
+			this->m_Event["Player"] = gLogPlayer.GetPlayerJson(pEdict);
 		}
 
 		gLogApi.SendEvent(LogApi::Events::ClientPutInServer, this->m_Event);
 	}
 }
 
-void CLogEvent::ClientDisconnect(edict_t* pEntity, bool Crash, const char* Reason)
+void CLogEvent::ClientDisconnect(edict_t* pEdict, bool Crash, const char* Reason)
 {
 	if (gLogApi.EventEnabled(__func__))
 	{
 		this->m_Event.clear();
 
-		if (!FNullEnt(pEntity))
+		if (!FNullEnt(pEdict))
 		{
 			this->m_Event["Event"] = __func__;
 
 			this->m_Event["Server"] = gLogApi.GetServerInfo();
 
-			this->m_Event["EntityId"] = ENTINDEX(pEntity);
-
-			this->m_Event["UserId"] = g_engfuncs.pfnGetPlayerUserId(pEntity);
-
-			this->m_Event["Name"] = STRING(pEntity->v.netname);
-
-			this->m_Event["AuthId"] = g_engfuncs.pfnGetPlayerAuthId(pEntity);
+			this->m_Event["Player"] = gLogPlayer.GetPlayerJson(pEdict);
 
 			this->m_Event["Crash"] = Crash;
 
@@ -150,50 +130,38 @@ void CLogEvent::ClientDisconnect(edict_t* pEntity, bool Crash, const char* Reaso
 	}
 }
 
-void CLogEvent::ClientKill(edict_t* pEntity)
+void CLogEvent::ClientKill(edict_t* pEdict)
 {
 	if (gLogApi.EventEnabled(__func__))
 	{
 		this->m_Event.clear();
 
-		if (!FNullEnt(pEntity))
+		if (!FNullEnt(pEdict))
 		{
 			this->m_Event["Event"] = __func__;
 
 			this->m_Event["Server"] = gLogApi.GetServerInfo();
 
-			this->m_Event["EntityId"] = ENTINDEX(pEntity);
-			
-			this->m_Event["UserId"] = g_engfuncs.pfnGetPlayerUserId(pEntity);
-
-			this->m_Event["Name"] = STRING(pEntity->v.netname);
-
-			this->m_Event["AuthId"] = g_engfuncs.pfnGetPlayerAuthId(pEntity);
+			this->m_Event["Player"] = gLogPlayer.GetPlayerJson(pEdict);
 		}
 
 		gLogApi.SendEvent(LogApi::Events::ClientKill, this->m_Event);
 	}
 }
 
-void CLogEvent::ClientUserInfoChanged(edict_t* pEntity, char* InfoBuffer)
+void CLogEvent::ClientUserInfoChanged(edict_t* pEdict, char* InfoBuffer)
 {
 	if (gLogApi.EventEnabled(__func__))
 	{
 		this->m_Event.clear();
 
-		if (!FNullEnt(pEntity))
+		if (!FNullEnt(pEdict))
 		{
 			this->m_Event["Event"] = __func__;
 
 			this->m_Event["Server"] = gLogApi.GetServerInfo();
 
-			this->m_Event["EntityId"] = ENTINDEX(pEntity);
-
-			this->m_Event["UserId"] = g_engfuncs.pfnGetPlayerUserId(pEntity);
-
-			this->m_Event["Name"] = STRING(pEntity->v.netname);
-
-			this->m_Event["AuthId"] = g_engfuncs.pfnGetPlayerAuthId(pEntity);
+			this->m_Event["Player"] = gLogPlayer.GetPlayerJson(pEdict);
 
 			this->m_Event["InfoBuffer"] = InfoBuffer;
 		}
@@ -202,13 +170,13 @@ void CLogEvent::ClientUserInfoChanged(edict_t* pEntity, char* InfoBuffer)
 	}
 }
 
-void CLogEvent::ClientCommand(edict_t* pEntity)
+void CLogEvent::ClientCommand(edict_t* pEdict)
 {
 	if (gLogApi.EventEnabled(__func__))
 	{
 		this->m_Event.clear();
 
-		if (!FNullEnt(pEntity))
+		if (!FNullEnt(pEdict))
 		{
 			auto Command = g_engfuncs.pfnCmd_Argv(0);
 
@@ -220,13 +188,7 @@ void CLogEvent::ClientCommand(edict_t* pEntity)
 
 					this->m_Event["Server"] = gLogApi.GetServerInfo();
 
-					this->m_Event["EntityId"] = ENTINDEX(pEntity);
-
-					this->m_Event["UserId"] = g_engfuncs.pfnGetPlayerUserId(pEntity);
-
-					this->m_Event["Name"] = STRING(pEntity->v.netname);
-
-					this->m_Event["AuthId"] = g_engfuncs.pfnGetPlayerAuthId(pEntity);
+					this->m_Event["Player"] = gLogPlayer.GetPlayerJson(pEdict);
 
 					this->m_Event["Command"] = Command;
 
@@ -249,13 +211,13 @@ void CLogEvent::ClientCommand(edict_t* pEntity)
 	}
 }
 
-void CLogEvent::ClientSay(edict_t* pEntity)
+void CLogEvent::ClientSay(edict_t* pEdict)
 {
 	if (gLogApi.EventEnabled(__func__))
 	{
 		this->m_Event.clear();
 
-		if (!FNullEnt(pEntity))
+		if (!FNullEnt(pEdict))
 		{
 			std::string Type = g_engfuncs.pfnCmd_Argv(0) ? g_engfuncs.pfnCmd_Argv(0) : "";
 
@@ -277,13 +239,7 @@ void CLogEvent::ClientSay(edict_t* pEntity)
 
 								this->m_Event["Server"] = gLogApi.GetServerInfo();
 
-								this->m_Event["EntityId"] = ENTINDEX(pEntity);
-
-								this->m_Event["UserId"] = g_engfuncs.pfnGetPlayerUserId(pEntity);
-
-								this->m_Event["Name"] = STRING(pEntity->v.netname);
-
-								this->m_Event["AuthId"] = g_engfuncs.pfnGetPlayerAuthId(pEntity);
+								this->m_Event["Player"] = gLogPlayer.GetPlayerJson(pEdict);
 
 								this->m_Event["Type"] = Type;
 
@@ -299,35 +255,27 @@ void CLogEvent::ClientSay(edict_t* pEntity)
 	}
 }
 
-void CLogEvent::ClientMenuHandle(edict_t* pEntity, std::string Callback, P_MENU_ITEM Item)
+void CLogEvent::ClientMenuHandle(edict_t* pEdict, std::string Callback, P_MENU_ITEM Item)
 {
 	if (!Callback.empty())
 	{
 		this->m_Event.clear();
 
-		if (!FNullEnt(pEntity))
+		if (!FNullEnt(pEdict))
 		{
 			this->m_Event["Event"] = Callback;
 
 			this->m_Event["Server"] = gLogApi.GetServerInfo();
 
-			this->m_Event["EntityId"] = ENTINDEX(pEntity);
+			this->m_Event["Player"] = gLogPlayer.GetPlayerJson(pEdict);
 
-			this->m_Event["UserId"] = g_engfuncs.pfnGetPlayerUserId(pEntity);
+			this->m_Event["Item"]["Info"] = Item.Info;
 
-			this->m_Event["Name"] = STRING(pEntity->v.netname);
+			this->m_Event["Item"]["Text"] = Item.Text;
 
-			this->m_Event["AuthId"] = g_engfuncs.pfnGetPlayerAuthId(pEntity);
+			this->m_Event["Item"]["Disabled"] = Item.Disabled;
 
-			this->m_Event["Callback"] = Callback;
-
-			this->m_Event["Info"] = Item.Info;
-
-			this->m_Event["Text"] = Item.Text;
-
-			this->m_Event["Disabled"] = Item.Disabled;
-
-			this->m_Event["Extra"] = Item.Extra;
+			this->m_Event["Item"]["Extra"] = Item.Extra;
 		}
 
 		gLogApi.SendEvent(LogApi::Events::ClientMenuHandle, this->m_Event);
