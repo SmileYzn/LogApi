@@ -423,7 +423,7 @@ void CLogApi::ClientPrint(int EventIndex, nlohmann::ordered_json Data)
 			if (Data[__func__].is_object())
 			{
 				// If is not empty
-				if (!Data[__func__]["EntityId"].empty() && !empty(Data[__func__]["PrintType"]) && !Data[__func__]["Message"].empty())
+				if (!Data[__func__]["EntityId"].empty() && !Data[__func__]["PrintType"].empty() && !Data[__func__]["Message"].empty())
 				{
 					// Entity index
 					auto EntityId = Data[__func__]["EntityId"].get<int>();
