@@ -3,7 +3,7 @@
 class LogAPI
 {
     /**
-     * Called when a unknow function is received
+     * Called when a function is received
      * 
      * @param string $name      Function name
      * @param type $arguments   Function argument list
@@ -36,6 +36,34 @@ class LogAPI
         }
         
         // Return null
+        return null;
+    }
+    
+    /**
+     * Find player using the list of players and target string
+     * 
+     * @param array $Players    Array of players of event
+     * @param string $Target    String to find player
+     * 
+     * @return array            Return Player found by search
+     */
+    protected function FindPlayer($Players, $Target)
+    {
+        foreach($Players as $AuthId => $Player)
+        {
+            if($Target[0] == '#')
+            {
+                if($Player['UserId'] == substr($Target, 1))
+                {
+                    return $Player;
+                }
+            }
+            else if(stripos($Player['Name'], $Target) !== false)
+            {
+                return $Player;
+            }
+        }
+        
         return null;
     }
 
@@ -101,6 +129,7 @@ class LogAPI
      * 
      * @param string $Event             Event Name
      * @param array $Server		Server information data
+     * @param int $EntityId             Entity Index
      * @param string $UserId            User Index
      * @param string $Name              Client Name
      * @param string $AuthId            Client AuthId
@@ -108,7 +137,7 @@ class LogAPI
      * 
      * @return mixed                    Array containing ServerExecute commands or null
      */
-    protected function ClientConnect($Event, $Server, $UserId, $Name, $AuthId, $Address)
+    protected function ClientConnect($Event, $Server, $EntityId, $UserId, $Name, $AuthId, $Address)
     {
         return null;
     }
@@ -118,13 +147,14 @@ class LogAPI
      * 
      * @param string $Event             Event Name
      * @param array $Server		Server information data
+     * @param int $EntityId             Entity Index
      * @param string $UserId            User Index
      * @param string $Name              Client Name
      * @param string $AuthId            Client AuthId
      * 
      * @return mixed                    Array containing ServerExecute commands or null
      */
-    protected function ClientPutInServer($Event, $Server, $UserId, $Name, $AuthId)
+    protected function ClientPutInServer($Event, $Server, $EntityId, $UserId, $Name, $AuthId)
     {
         return null;
     }
@@ -134,15 +164,14 @@ class LogAPI
      * 
      * @param string $Event             Event Name
      * @param array $Server		Server information data
+     * @param int $EntityId             Entity Index
      * @param string $UserId            User Index
      * @param string $Name              Client Name
      * @param string $AuthId            Client AuthId
-     * @param bool $Crash		Client Crash Flag
-     * @param string $Reason		Reason of disconnect
      * 
      * @return mixed                    Array containing ServerExecute commands or null
      */
-    protected function ClientDisconnect($Event, $Server, $UserId, $Name, $AuthId, $Crash, $Reason)
+    protected function ClientDisconnect($Event, $Server, $EntityId, $UserId, $Name, $AuthId)
     {
         return null;
     }
@@ -152,13 +181,14 @@ class LogAPI
      * 
      * @param string $Event             Event Name
      * @param array $Server		Server information data
+     * @param int $EntityId             Entity Index
      * @param string $UserId            User Index
      * @param string $Name              Client Name
      * @param string $AuthId            Client AuthId
      * 
      * @return mixed                    Array containing ServerExecute commands or null
      */
-    protected function ClientKill($Event, $Server, $UserId, $Name, $AuthId)
+    protected function ClientKill($Event, $Server, $EntityId, $UserId, $Name, $AuthId)
     {
         return null;
     }
@@ -168,6 +198,7 @@ class LogAPI
      * 
      * @param string $Event             Event Name
      * @param array $Server		Server information data
+     * @param int $EntityId             Entity Index
      * @param string $UserId            User Index
      * @param string $Name              Client Name
      * @param string $AuthId            Client AuthId
@@ -175,7 +206,7 @@ class LogAPI
      * 
      * @return mixed                    Array containing ServerExecute commands or null
      */
-    protected function ClientUserInfoChanged($Event, $Server, $UserId, $Name, $AuthId, $InfoBuffer)
+    protected function ClientUserInfoChanged($Event, $Server, $EntityId, $UserId, $Name, $AuthId, $InfoBuffer)
     {
         return null;
     }
@@ -185,6 +216,7 @@ class LogAPI
      * 
      * @param string $Event             Event Name
      * @param array $Server		Server information data
+     * @param int $EntityId             Entity Index
      * @param string $UserId            User Index
      * @param string $Name              Client Name
      * @param string $AuthId            Client AuthId
@@ -193,7 +225,7 @@ class LogAPI
      * 
      * @return mixed                    Array containing ServerExecute commands or null
      */
-    protected function ClientCommand($Event, $Server, $UserId, $Name, $AuthId, $Command, $Args)
+    protected function ClientCommand($Event, $Server, $EntityId, $UserId, $Name, $AuthId, $Command, $Args)
     {
         return null;
     }
@@ -203,6 +235,7 @@ class LogAPI
      * 
      * @param string $Event             Event Name
      * @param array $Server		Server information data
+     * @param int $EntityId             Entity Index
      * @param string $UserId            User Index
      * @param string $Name              Client Name
      * @param string $AuthId            Client AuthId
@@ -211,7 +244,7 @@ class LogAPI
      * 
      * @return mixed                    Array containing ServerExecute commands or null
      */
-    protected function ClientSay($Event, $Server, $UserId, $Name, $AuthId, $Type, $Message)
+    protected function ClientSay($Event, $Server, $EntityId, $UserId, $Name, $AuthId, $Type, $Message)
     {
         return null;
     }
