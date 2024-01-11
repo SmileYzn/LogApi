@@ -3,18 +3,9 @@
 class LogAPI
 {
     /**
-     * Called when a function is received
-     * 
-     * @param string $name      Function name
-     * @param type $arguments   Function argument list
-     */
-    function __call($name, $arguments)
-    {
-        // Do nothing here
-    }
-    
-    /**
-     * On Receive Event 
+     * On Receive Event
+     *
+     * @return mixed                    Array containing LogAPI commands or null
      */
     function OnEvent()
     {
