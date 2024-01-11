@@ -12,6 +12,12 @@ MetaMod Plugin that uses JSON API to comunicate with WebServer using HTTP/S Prot
 The Plugin sends requests to a webserver using JSON format.
 And it can get responses from the webserver of what to do on the HLDS side using specific data models.
 
+The main idea is control HLDS server using server or player events, that will be handled by webserver.
+Like create a ban system, register system, live server list or something that envolves webservers, databases, players and much more.
+
+## Visit our documentation
+You can learn what LogAPI can do in HLDS server, control the events, create responses and more: [LogApi Wiki](https://github.com/SmileYzn/LogApi/wiki)
+
 ## Console Vriables
 | Console Variable | Default | Required | Description                                                |
 |------------------|:-------:|:--------:|------------------------------------------------------------|
@@ -39,7 +45,7 @@ ClientCommand 		0
 ClientSay 		0
 ```
 
-## PHP Example
+## There is a small PHP Example
 See how webserver can handle some of events using PHP.
 In the example, when player join in server the webserver will return a chat message to all players, and do a sv_restart command.
 
