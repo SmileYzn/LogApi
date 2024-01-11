@@ -493,7 +493,7 @@ void CLogApi::PrintChat(int EventIndex, nlohmann::ordered_json Data)
 					if (!Message.empty())
 					{
 						// Print to entity
-						gLogUtil.SayText(pEntity, ENTINDEX(pEntity), "%s", Message.c_str());
+						gLogUtil.SayText(pEntity, ENTINDEX(pEntity), Message.c_str());
 					}
 				}
 			}

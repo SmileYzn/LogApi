@@ -102,7 +102,7 @@ void CLogEvent::ClientPutInServer(edict_t* pEdict)
 
 			this->m_Event["Player"] = gLogPlayer.GetPlayerJson(pEdict);
 		}
-
+		
 		gLogApi.SendEvent(LogApi::Events::ClientPutInServer, this->m_Event);
 	}
 }
