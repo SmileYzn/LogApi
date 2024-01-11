@@ -6,11 +6,11 @@
 </p>
 
 # HLDS Log API
-MetaMod Plugin that uses JSON API to comunicate with WebServer using HTTP/s Protocol.
+MetaMod Plugin that uses JSON API to comunicate with WebServer using HTTP/S Protocol.
 
 ## What that plugin do
 The Plugin sends requests to a webserver using JSON format.
-And it can get responses from the webserver of what to do on the HLDS side.
+And it can get responses from the webserver of what to do on the HLDS side using specific data models.
 
 ## Console Vriables
 | Console Variable | Default | Required | Description                                                |
@@ -22,23 +22,21 @@ And it can get responses from the webserver of what to do on the HLDS side.
 | log_api_delay    |   60.0  |    No    | Delay to update Server Info on webserver                   |
 
 ## Enable / Disable events
-To enable what event will be sent to webserver, edit events.json file.
+To enable what event will be sent to webserver, edit events.cfg file.
 The settings will be work after server change level or restart.
 
 ```
-{
-	"ServerActivate": 		false,
-	"ServerDeactivate": 		false,
-	"ServerAlertMessage": 		false,
-        "ServerInfo":                   false,
-	"ClientConnect":		false,
-	"ClientPutInServer":		false,
-	"ClientDisconnect":		false,
-	"ClientKill": 			false,
-	"ClientUserInfoChanged": 	false,
-        "ClientCommand":                false,
-        "ClientSay":                    false
-}
+ServerActivate 		0
+ServerDeactivate 	0
+ServerAlertMessage 	0
+ServerInfo 		0
+ClientConnect 		0
+ClientPutInServer 	0
+ClientDisconnect 	0
+ClientKill 		0
+ClientUserInfoChanged 	0
+ClientCommand 		0
+ClientSay 		0
 ```
 
 ## Development Alpha Stage
