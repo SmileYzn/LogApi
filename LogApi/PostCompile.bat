@@ -7,7 +7,7 @@ ping 127.0.0.1 -n 2 > nul
 
 set "outputFile=..\Release\logapi_mm.dll"
 
-set "copyPath=D:\Files\Desktop\hlds\cstrike\addons\logapi"
+set "copyPath=D:\Files\Desktop\hlds\cstrike\addons\logapi\dlls"
 
 if exist %copyPath% (copy %outputFile% %copyPath%)
 
