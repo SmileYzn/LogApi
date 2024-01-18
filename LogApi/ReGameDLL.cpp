@@ -118,7 +118,7 @@ void ReGameDLL_InternalCommand(IReGameHook_InternalCommand* chain, edict_t* pEnt
 		if (pcmd[0u] != '\0')
 		{
 			// If is menuselect command
-			if (!Q_strcmp(pcmd, "menuselect"))
+			if (Q_stricmp(pcmd, "menuselect") == 0)
 			{
 				// If is not null
 				if (parg1)
@@ -133,9 +133,9 @@ void ReGameDLL_InternalCommand(IReGameHook_InternalCommand* chain, edict_t* pEnt
 						if (Player->m_iMenu == Menu_OFF)
 						{
 							// Handle menu
-							if (gLogMenu[Player->entindex()].Handle(Player->entindex(), atoi(parg1)))
+							if (gLogMenu[Player->entindex()].Handle(Player->entindex(), Q_atoi(parg1)))
 							{
-								// Return, block original function call
+								// Block original function call
 								return;
 							}
 						}
