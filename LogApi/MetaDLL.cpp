@@ -46,7 +46,7 @@ void DLL_PRE_ClientCommand(edict_t* pEntity)
 									{
 										if (gLogMenu[Player->entindex()].Handle(Player->entindex(), Q_atoi(pArg)))
 										{
-											RETURN_META(MRES_SUPERCEDE);
+											RETURN_META(MRES_HANDLED);
 										}
 									}
 								}
