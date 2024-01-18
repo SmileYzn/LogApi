@@ -1,7 +1,6 @@
 #pragma once
 
 #pragma region DLL_PRE
-void DLL_PRE_ClientCommand(edict_t* pEntity);
 #pragma endregion
 
 #pragma region DLL_POST

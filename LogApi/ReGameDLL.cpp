@@ -79,12 +79,16 @@ bool ReGameDLL_Init()
 
 	g_ReGameHookchains->InstallGameRules()->registerHook(ReGameDLL_InstallGameRules);
 
+	g_ReGameHookchains->InternalCommand()->registerHook(ReGameDLL_InternalCommand);
+
 	return true;
 }
 
 bool ReGameDLL_Stop()
 {
 	g_ReGameHookchains->InstallGameRules()->unregisterHook(ReGameDLL_InstallGameRules);
+
+	g_ReGameHookchains->InternalCommand()->unregisterHook(ReGameDLL_InternalCommand);
 
 	return true;
 }
@@ -103,4 +107,44 @@ CGameRules *ReGameDLL_InstallGameRules(IReGameHook_InstallGameRules *chain)
 	}
 	
 	return gamerules;
+}
+
+void ReGameDLL_InternalCommand(IReGameHook_InternalCommand* chain, edict_t* pEntity, const char* pcmd, const char* parg1)
+{
+	// If is not null
+	if (pcmd)
+	{
+		// If string is not empty
+		if (pcmd[0u] != '\0')
+		{
+			// If is menuselect command
+			if (!Q_strcmp(pcmd, "menuselect"))
+			{
+				// If is not null
+				if (parg1)
+				{
+					// Get player entity
+					auto Player = UTIL_PlayerByIndexSafe(ENTINDEX(pEntity));
+
+					// if is not null
+					if (Player)
+					{
+						// If native CS menu is not being displayed
+						if (Player->m_iMenu == Menu_OFF)
+						{
+							// Handle menu
+							if (gLogMenu[Player->entindex()].Handle(Player->entindex(), atoi(parg1)))
+							{
+								// Return, block original function call
+								return;
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+
+	// Call original function
+	chain->callNext(pEntity, pcmd, parg1);
 }
