@@ -48,7 +48,7 @@ void CLogApi::ServerActivate()
 			std::string Event = "";
 
 			// Enable / Disable
-			int Enabled = 0; 
+			std::string Enabled = "0";
 
 			// While get line
 			while (std::getline(File, Line))
@@ -63,10 +63,10 @@ void CLogApi::ServerActivate()
 					if (Row >> Event >> Enabled)
 					{
 						// Inser to map
-						this->m_Events[Event] = Enabled;
+						this->m_Events[Event] = (Enabled[0U] != '0') ? 1 : 0;
 
 						// Log error
-						LOG_CONSOLE(PLID, "[%s][%s] Status: %s.", __func__, Event.c_str(), Enabled ? "Enabled" : "Disabled");
+						LOG_CONSOLE(PLID, "[%s][%s] Status: %s.", __func__, Event.c_str(), (Enabled[0U] != '0') ? "Enabled" : "Disabled");
 					}
 					else
 					{
