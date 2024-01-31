@@ -64,15 +64,15 @@ void CLogApi::ServerActivate()
 					{
 						// Inser to map
 						this->m_Events[Event] = Enabled;
+
+						// Log error
+						LOG_CONSOLE(PLID, "[%s][%s] Status: %s.", __func__, Event.c_str(), Enabled ? "Enabled" : "Disabled");
 					}
 					else
 					{
 						// Log error
 						LOG_CONSOLE(PLID, "[%s] Line %d is incorrect, check events file.", __func__, LineCount);
 					}
-
-					// Log
-					LOG_CONSOLE(PLID, "[%s][%s] %d", __func__, Event.c_str(), Enabled);
 				}
 
 				// Increment
