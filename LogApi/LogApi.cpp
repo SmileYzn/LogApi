@@ -42,13 +42,13 @@ void CLogApi::ServerActivate()
 			std::string Line = "";
 
 			// Line Count
-			auto LineCount = 0;
+			int LineCount = 0;
 
 			// Event
 			std::string Event = "";
 
 			// Enable / Disable
-			auto Enabled = 0;
+			int Enabled = 0; 
 
 			// While get line
 			while (std::getline(File, Line))
