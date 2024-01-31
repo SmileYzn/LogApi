@@ -70,6 +70,9 @@ void CLogApi::ServerActivate()
 						// Log error
 						LOG_CONSOLE(PLID, "[%s] Line %d is incorrect, check events file.", __func__, LineCount);
 					}
+
+					// Log
+					LOG_CONSOLE(PLID, "[%s][%s] %d", __func__, Event.c_str(), Enabled);
 				}
 
 				// Increment

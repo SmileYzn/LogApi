@@ -98,7 +98,7 @@
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <ModuleDefinitionFile>LogApi.def</ModuleDefinitionFile>
-      <AdditionalDependencies>$(ProjectDir)include\curl\lib\libcurl_a_debug.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>$(ProjectDir)include\curl\lib\libcurl_a_debug.lib</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
       <Command>.\PostCompile.bat</Command>
