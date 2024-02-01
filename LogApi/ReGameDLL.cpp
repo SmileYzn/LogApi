@@ -123,20 +123,24 @@ void ReGameDLL_InternalCommand(IReGameHook_InternalCommand* chain, edict_t* pEnt
 				// If is not null
 				if (parg1)
 				{
-					// Get player entity
-					auto Player = UTIL_PlayerByIndexSafe(ENTINDEX(pEntity));
-
-					// if is not null
-					if (Player)
+					// If entity is not null
+					if (!FNullEnt(pEntity))
 					{
-						// If native CS menu is not being displayed
-						if (Player->m_iMenu == Menu_OFF)
+						// Get player entity
+						auto Player = UTIL_PlayerByIndexSafe(ENTINDEX(pEntity));
+
+						// if is not null
+						if (Player)
 						{
-							// Handle menu
-							if (gLogMenu[Player->entindex()].Handle(Player->entindex(), Q_atoi(parg1)))
+							// If native CS menu is not being displayed
+							if (Player->m_iMenu == Menu_OFF)
 							{
-								// Block original function call
-								return;
+								// Handle menu
+								if (gLogMenu[Player->entindex()].Handle(Player->entindex(), Q_atoi(parg1)))
+								{
+									// Block original function call
+									return;
+								}
 							}
 						}
 					}

@@ -64,9 +64,6 @@ void CLogApi::ServerActivate()
 					{
 						// Inser to map
 						this->m_Events[Event] = (Enabled[0U] != '0') ? 1 : 0;
-
-						// Log error
-						LOG_CONSOLE(PLID, "[%s][%s] Status: %s.", __func__, Event.c_str(), (Enabled[0U] != '0') ? "Enabled" : "Disabled");
 					}
 					else
 					{
