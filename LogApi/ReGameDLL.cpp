@@ -111,43 +111,43 @@ CGameRules *ReGameDLL_InstallGameRules(IReGameHook_InstallGameRules *chain)
 
 void ReGameDLL_InternalCommand(IReGameHook_InternalCommand* chain, edict_t* pEntity, const char* pcmd, const char* parg1)
 {
-	//// If is not null
-	//if (pcmd)
-	//{
-	//	// If string is not empty
-	//	if (pcmd[0u] != '\0')
-	//	{
-	//		// If is menuselect command
-	//		if (Q_stricmp(pcmd, "menuselect") == 0)
-	//		{
-	//			// If is not null
-	//			if (parg1)
-	//			{
-	//				// If entity is not null
-	//				if (!FNullEnt(pEntity))
-	//				{
-	//					// Get player entity
-	//					auto Player = UTIL_PlayerByIndexSafe(ENTINDEX(pEntity));
+	// If is not null
+	if (pcmd)
+	{
+		// If string is not empty
+		if (pcmd[0u] != '\0')
+		{
+			// If is menuselect command
+			if (Q_stricmp(pcmd, "menuselect") == 0)
+			{
+				// If is not null
+				if (parg1)
+				{
+					// If entity is not null
+					if (!FNullEnt(pEntity))
+					{
+						// Get player entity
+						auto Player = UTIL_PlayerByIndexSafe(ENTINDEX(pEntity));
 
-	//					// if is not null
-	//					if (Player)
-	//					{
-	//						// If native CS menu is not being displayed
-	//						if (Player->m_iMenu == Menu_OFF)
-	//						{
-	//							// Handle menu
-	//							if (gLogMenu[Player->entindex()].Handle(Player->entindex(), Q_atoi(parg1)))
-	//							{
-	//								// Block original function call
-	//								return;
-	//							}
-	//						}
-	//					}
-	//				}
-	//			}
-	//		}
-	//	}
-	//}
+						// if is not null
+						if (Player)
+						{
+							// If native CS menu is not being displayed
+							if (Player->m_iMenu == Menu_OFF)
+							{
+								// Handle menu
+								if (gLogMenu[Player->entindex()].Handle(Player->entindex(), Q_atoi(parg1)))
+								{
+									// Block original function call
+									return;
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+	}
 
 	// Call original function
 	chain->callNext(pEntity, pcmd, parg1);
