@@ -38,10 +38,10 @@ jobs:
         mkdir publish\addons\logapi\dlls
 
         # Move cstrike files to publish
-        move ${{env.SOLUTION_FILE_PATH}}\cstrike\* publish
+        copy ${{env.SOLUTION_FILE_PATH}}\cstrike\* publish -Recurse -Force
 
         # Move released dll to publish
-        move ${{env.BUILD_CONFIGURATION}}\*.dll publish\addons\logapi\dlls
+        copy ${{env.BUILD_CONFIGURATION}}\*.dll publish\addons\logapi\dlls -Recurse -Force
 
     - name: Deploy artifacts
       uses: actions/upload-artifact@main
