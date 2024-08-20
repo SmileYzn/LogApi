@@ -1,0 +1,117 @@
+name: Build C/C++
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  linux:
+    name: Linux Build
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+      
+    - name: Add i386 architecture
+      run: sudo dpkg --add-architecture i386
+      
+    - name: Update repository
+      run: sudo apt-get update
+
+    - name: Install build dependencies
+      run: sudo apt-get install -qq -y wget unzip
+
+    - name: Instal GCC G++ 4.8 (multilib)
+      run: |
+        mkdir temp
+        cd temp
+
+        # amd64
+        wget http://mirrors.kernel.org/ubuntu/pool/universe/g/gcc-4.8/g++-4.8_4.8.5-4ubuntu8_amd64.deb
+        wget http://mirrors.kernel.org/ubuntu/pool/universe/g/gcc-4.8/libstdc++-4.8-dev_4.8.5-4ubuntu8_amd64.deb
+        wget http://mirrors.kernel.org/ubuntu/pool/universe/g/gcc-4.8/gcc-4.8-base_4.8.5-4ubuntu8_amd64.deb
+        wget http://mirrors.kernel.org/ubuntu/pool/universe/g/gcc-4.8/gcc-4.8_4.8.5-4ubuntu8_amd64.deb
+        wget http://mirrors.kernel.org/ubuntu/pool/universe/g/gcc-4.8/libgcc-4.8-dev_4.8.5-4ubuntu8_amd64.deb
+        wget http://mirrors.kernel.org/ubuntu/pool/universe/g/gcc-4.8/cpp-4.8_4.8.5-4ubuntu8_amd64.deb
+        wget http://mirrors.kernel.org/ubuntu/pool/universe/g/gcc-4.8/libasan0_4.8.5-4ubuntu8_amd64.deb
+        sudo apt install ./gcc-4.8_4.8.5-4ubuntu8_amd64.deb ./gcc-4.8-base_4.8.5-4ubuntu8_amd64.deb ./libstdc++-4.8-dev_4.8.5-4ubuntu8_amd64.deb ./cpp-4.8_4.8.5-4ubuntu8_amd64.deb ./libgcc-4.8-dev_4.8.5-4ubuntu8_amd64.deb ./libasan0_4.8.5-4ubuntu8_amd64.deb ./g++-4.8_4.8.5-4ubuntu8_amd64.deb
+
+        # i386
+        wget http://mirrors.kernel.org/ubuntu/pool/universe/g/gcc-4.8/g++-4.8_4.8.5-4ubuntu8_i386.deb
+        wget http://mirrors.kernel.org/ubuntu/pool/universe/g/gcc-4.8/libstdc++-4.8-dev_4.8.5-4ubuntu8_i386.deb
+        wget http://mirrors.kernel.org/ubuntu/pool/universe/g/gcc-4.8/gcc-4.8-base_4.8.5-4ubuntu8_i386.deb
+        wget http://mirrors.kernel.org/ubuntu/pool/universe/g/gcc-4.8/gcc-4.8_4.8.5-4ubuntu8_i386.deb
+        wget http://mirrors.kernel.org/ubuntu/pool/universe/g/gcc-4.8/libgcc-4.8-dev_4.8.5-4ubuntu8_i386.deb
+        wget http://mirrors.kernel.org/ubuntu/pool/universe/g/gcc-4.8/cpp-4.8_4.8.5-4ubuntu8_i386.deb
+        wget http://mirrors.kernel.org/ubuntu/pool/universe/g/gcc-4.8/libasan0_4.8.5-4ubuntu8_i386.deb
+        sudo apt install ./gcc-4.8_4.8.5-4ubuntu8_i386.deb ./gcc-4.8-base_4.8.5-4ubuntu8_i386.deb ./libstdc++-4.8-dev_4.8.5-4ubuntu8_i386.deb ./cpp-4.8_4.8.5-4ubuntu8_i386.deb ./libgcc-4.8-dev_4.8.5-4ubuntu8_i386.deb ./libasan0_4.8.5-4ubuntu8_i386.deb ./g++-4.8_4.8.5-4ubuntu8_i386.deb
+        
+    - name: Update GCC and G++ alternatives
+      run: |
+        sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-4.8 50
+        sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-4.8 50
+        sudo update-alternatives --config gcc
+        sudo update-alternatives --config g++
+
+    - name: Run build
+      working-directory: ./LogApi
+      run: make
+    
+    - name: Move release file to publish
+      run: |
+        # Make Accuracy Fix path
+        mkdir -p publish/addons/logapi/dlls
+
+        # Move released file to dlls
+        mv ./LogApi/Release/logapi_mm.so publish/addons/logapi/dlls
+
+        # Move settings file to folder
+        mv ./cstrike/addons/logapi/logapi.cfg publish/addons/logapi/logapi.cfg
+
+    - name: Deploy artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: linux32
+        path: publish/*
+        
+  windows:
+    name: Windows Build
+    runs-on: windows-latest
+      
+    env:
+      SOLUTION_FILE_PATH: .
+      BUILD_CONFIGURATION: Release
+  
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Add MSBuild to PATH
+      uses: microsoft/setup-msbuild@v2
+
+    - name: Restore NuGet packages
+      working-directory: ${{env.GITHUB_WORKSPACE}}
+      run: nuget restore ${{env.SOLUTION_FILE_PATH}}
+
+    - name: Run Build
+      working-directory: ${{env.GITHUB_WORKSPACE}}
+      run: msbuild /m /p:Configuration=${{env.BUILD_CONFIGURATION}} ${{env.SOLUTION_FILE_PATH}}
+
+    - name: Move release file to publish
+      working-directory: ${{env.GITHUB_WORKSPACE}}
+      run: |
+        # Make publish directory
+        mkdir publish\addons\logapi\dlls
+
+        # Move released dll to publish
+        move ${{env.BUILD_CONFIGURATION}}\*.dll publish\addons\logapi\dlls
+
+        # Move settings file to folder
+        mv ${{env.SOLUTION_FILE_PATH}}\cstrike\addons\logapi\logapi.cfg publish\addons\logapi\logapi.cfg
+
+    - name: Deploy artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: win32
+        path: publish/*
