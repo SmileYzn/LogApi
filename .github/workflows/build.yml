@@ -64,11 +64,13 @@ jobs:
         # Make Accuracy Fix path
         mkdir -p publish/addons/logapi/dlls
 
-        # Move released file to dlls
-        mv ./LogApi/Release/logapi_mm.so publish/addons/logapi/dlls
+        # Copy released file to dlls
+        cp ./LogApi/Release/logapi_mm.so publish/addons/logapi/dlls
 
         # Move settings file to folder
-        mv ./cstrike/addons/logapi/logapi.cfg publish/addons/logapi/logapi.cfg
+        cp ./cstrike/addons/logapi/logapi.cfg publish/addons/logapi/logapi.cfg
+        cp ./cstrike/addons/logapi/events.cfg publish/addons/logapi/events.cfg
+        cp ./cstrike/addons/logapi/LogApi.php publish/addons/logapi/LogApi.php
 
     - name: Deploy artifacts
       uses: actions/upload-artifact@v4
@@ -107,8 +109,10 @@ jobs:
         # Move released dll to publish
         move ${{env.BUILD_CONFIGURATION}}\*.dll publish\addons\logapi\dlls
 
-        # Move settings file to folder
-        mv ${{env.SOLUTION_FILE_PATH}}\cstrike\addons\logapi\logapi.cfg publish\addons\logapi\logapi.cfg
+        # Copy settings file to folder
+        cp ${{env.SOLUTION_FILE_PATH}}\cstrike\addons\logapi\logapi.cfg publish\addons\logapi\logapi.cfg
+        cp ${{env.SOLUTION_FILE_PATH}}\cstrike\addons\logapi\events.cfg publish\addons\logapi\events.cfg
+        cp ${{env.SOLUTION_FILE_PATH}}\cstrike\addons\logapi\LogApi.php publish\addons\logapi\LogApi.php
 
     - name: Deploy artifacts
       uses: actions/upload-artifact@v4
