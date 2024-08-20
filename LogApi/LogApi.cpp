@@ -30,65 +30,57 @@ void CLogApi::ServerActivate()
 	// Frame Time
 	this->m_FrameTime = 0.0f;
 
-	try
+	// File stream
+	std::ifstream File(LOG_API_FILE_EVENTS);
+
+	// If is open
+	if (File)
 	{
-		// File stream
-		std::ifstream File(LOG_API_FILE_EVENTS);
+		// Line
+		std::string Line = "";
 
-		// If is open
-		if (File)
+		// Line Count
+		int LineCount = 0;
+
+		// Event
+		std::string Event = "";
+
+		// Enable / Disable
+		std::string Enabled = "0";
+
+		// While get line
+		while (std::getline(File, Line))
 		{
-			// Line
-			std::string Line = "";
-
-			// Line Count
-			int LineCount = 0;
-
-			// Event
-			std::string Event = "";
-
-			// Enable / Disable
-			std::string Enabled = "0";
-
-			// While get line
-			while (std::getline(File, Line))
+			// If line is not commented
+			if (!(Line.rfind("#", 0) == 0))
 			{
-				// If line is not commented
-				if (!(Line.rfind("#", 0) == 0))
+				// String stream
+				std::istringstream Row(Line);
+
+				// Parse Line
+				if (Row >> Event >> Enabled)
 				{
-					// String stream
-					std::istringstream Row(Line);
-
-					// Parse Line
-					if (Row >> Event >> Enabled)
-					{
-						// Inser to map
-						this->m_Events[Event] = (Enabled[0U] != '0') ? 1 : 0;
-					}
-					else
-					{
-						// Log error
-						LOG_CONSOLE(PLID, "[%s] Line %d is incorrect, check events file.", __func__, LineCount);
-					}
+					// Inser to map
+					this->m_Events[Event] = (Enabled[0U] != '0') ? 1 : 0;
 				}
-
-				// Increment
-				LineCount++;
+				else
+				{
+					// Log error
+					LOG_CONSOLE(PLID, "[%s] Line %d is incorrect, check events file.", __func__, LineCount);
+				}
 			}
 
-			// Close file
-			File.close();
+			// Increment
+			LineCount++;
 		}
-		else
-		{
-			// Failed on error
-			LOG_CONSOLE(PLID, "[%s] Failed to open file: %s", __func__, LOG_API_FILE_EVENTS);
-		}
+
+		// Close file
+		File.close();
 	}
-	catch (const nlohmann::ordered_json::parse_error& e)
+	else
 	{
-		// JSON exeption errors
-		LOG_CONSOLE(PLID, "[%s] %s", __func__, e.what());
+		// Failed on error
+		LOG_CONSOLE(PLID, "[%s] Failed to open file: %s", __func__, LOG_API_FILE_EVENTS);
 	}
 }
 
