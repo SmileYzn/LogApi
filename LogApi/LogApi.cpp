@@ -31,7 +31,7 @@ void CLogApi::ServerActivate()
 	this->m_FrameTime = 0.0f;
 
 	// File stream
-	/*std::ifstream File(LOG_API_FILE_EVENTS);
+	std::ifstream File(LOG_API_FILE_EVENTS);
 
 	// If is open
 	if (File)
@@ -81,7 +81,7 @@ void CLogApi::ServerActivate()
 	{
 		// Failed on error
 		LOG_CONSOLE(PLID, "[%s] Failed to open file: %s", __func__, LOG_API_FILE_EVENTS);
-	}*/
+	}
 }
 
 // On server frame
