@@ -10,5 +10,5 @@
 	"ClientUserInfoChanged": 	false,
 	"ClientCommand": 		false,
 	"ClientSay": 			false,
-	"ClientMenuHandle":		false,
+	"ClientMenuHandle":		false
 }
