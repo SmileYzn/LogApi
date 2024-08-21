@@ -27,18 +27,30 @@ void CLogApi::ServerActivate()
 	try
 	{
 		// File stream
-		std::ifstream fp(LOG_API_FILE_EVENTS);
+		FILE* fp = fopen(LOG_API_FILE_EVENTS, "r");
 
 		if (fp)
 		{
-			// Reset pointer
-			fp.clear();
+			// Set file pointer to end of file
+			fseek(fp, 0, SEEK_END);
 
-			// Set pointer to begin of file
-			fp.seekg(0, std::ios::beg);
+			// Get final position
+			long fs = ftell(fp);
+
+			// Set file pointer to start of file
+			fseek(fp, 0, SEEK_SET);
+
+			// Create empty std::string with file size
+			std::string buffer(fs, '\0');
+
+			// Read file to std::string buffer
+			fread(&buffer[0], 1, fs, fp);
+
+			// Close file pointer
+			fclose(fp);
 
 			// Read data
-			auto json = nlohmann::ordered_json::parse(fp, nullptr, true, true);
+			auto json = nlohmann::ordered_json::parse(buffer, nullptr, true, true);
 
 			// Loop each item
 			for (auto const& event : json.items())
