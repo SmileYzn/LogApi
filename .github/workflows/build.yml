@@ -69,7 +69,7 @@ jobs:
 
         # Move settings file to folder
         cp ./cstrike/addons/logapi/logapi.cfg publish/addons/logapi/logapi.cfg
-        cp ./cstrike/addons/logapi/events.cfg publish/addons/logapi/events.cfg
+        cp ./cstrike/addons/logapi/events.json publish/addons/logapi/events.json
         cp ./cstrike/addons/logapi/LogApi.php publish/addons/logapi/LogApi.php
 
     - name: Deploy artifacts
@@ -111,7 +111,7 @@ jobs:
 
         # Copy settings file to folder
         cp ${{env.SOLUTION_FILE_PATH}}\cstrike\addons\logapi\logapi.cfg publish\addons\logapi\logapi.cfg
-        cp ${{env.SOLUTION_FILE_PATH}}\cstrike\addons\logapi\events.cfg publish\addons\logapi\events.cfg
+        cp ${{env.SOLUTION_FILE_PATH}}\cstrike\addons\logapi\events.json publish\addons\logapi\events.json
         cp ${{env.SOLUTION_FILE_PATH}}\cstrike\addons\logapi\LogApi.php publish\addons\logapi\LogApi.php
 
     - name: Deploy artifacts

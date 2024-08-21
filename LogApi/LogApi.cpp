@@ -19,68 +19,41 @@ void CLogApi::ServerActivate()
 	this->m_log_api_bearer = gLogUtil.CvarRegister("log_api_bearer", "");
 
 	// Server Info Event Delay (Delay to update Server Info on webserver)
-	this->log_api_delay = gLogUtil.CvarRegister("log_api_delay", "60.0");
+	this->m_log_api_delay = gLogUtil.CvarRegister("log_api_delay", "60.0");
 
-	// Execute Settings File
-	g_engfuncs.pfnServerCommand("exec addons/logapi/logapi.cfg\n");
-
-	// Clear events
-	this->m_Events.clear();
-
-	// Frame Time
-	this->m_FrameTime = 0.0f;
-
-	// File stream
-	std::ifstream File(LOG_API_FILE_EVENTS);
-
-	// If is open
-	if (File)
+	try
 	{
-		// Line
-		std::string Line = "";
+		// File stream
+		std::ifstream fp(LOG_API_FILE_EVENTS);
 
-		// Line Count
-		int LineCount = 0;
-
-		// Event
-		std::string Event = "";
-
-		// Enable / Disable
-		std::string Enabled = "0";
-
-		// While get line
-		while (std::getline(File, Line))
+		if (fp)
 		{
-			// If line is not commented
-			if (!(Line.rfind("#", 0) == 0))
+			// Reset pointer
+			fp.clear();
+
+			// Set pointer to begin of file
+			fp.seekg(0, std::ios::beg);
+
+			// Read data
+			auto json = nlohmann::ordered_json::parse(fp, nullptr, true, true);
+
+			// Loop each item
+			for (auto const& event : json.items())
 			{
-				// String stream
-				std::istringstream Row(Line);
-
-				// Parse Line
-				if (Row >> Event >> Enabled)
-				{
-					// Inser to map
-					this->m_Events[Event] = (Enabled[0U] != '0') ? 1 : 0;
-				}
-				else
-				{
-					// Log error
-					LOG_CONSOLE(PLID, "[%s] Line %d is incorrect, check events file.", __func__, LineCount);
-				}
+				// Insert event as enabled / disabled
+				this->m_Events.insert(std::make_pair(event.key(), event.value().get<bool>()));
 			}
-
-			// Increment
-			LineCount++;
 		}
-
-		// Close file
-		File.close();
+		else
+		{
+			// Failed on error
+			LOG_CONSOLE(PLID, "[%s] Failed to open file: %s", __func__, LOG_API_FILE_EVENTS);
+		}
 	}
-	else
+	catch (const nlohmann::ordered_json::parse_error& e)
 	{
-		// Failed on error
-		LOG_CONSOLE(PLID, "[%s] Failed to open file: %s", __func__, LOG_API_FILE_EVENTS);
+		// JSON exeption errors
+		LOG_CONSOLE(PLID, "[%s] %s", __func__, e.what());
 	}
 }
 
@@ -88,10 +61,10 @@ void CLogApi::ServerActivate()
 void CLogApi::ServerFrame()
 {
 	// If variable is not null
-	if (this->log_api_delay)
+	if (this->m_log_api_delay)
 	{
 		// If is set more than 5 seconds
-		if (this->log_api_delay->value > 5.0f)
+		if (this->m_log_api_delay->value > 5.0f)
 		{
 			// If frame time was passed
 			if (gpGlobals->time >= this->m_FrameTime)
@@ -100,7 +73,7 @@ void CLogApi::ServerFrame()
 				gLogEvent.ServerInfo();
 
 				// Set next frame time
-				this->m_FrameTime = (gpGlobals->time + this->log_api_delay->value);
+				this->m_FrameTime = (gpGlobals->time + this->m_log_api_delay->value);
 			}
 		}
 	}

@@ -257,27 +257,30 @@ void CLogEvent::ClientSay(edict_t* pEdict)
 
 void CLogEvent::ClientMenuHandle(edict_t* pEdict, std::string Callback, P_MENU_ITEM Item)
 {
-	if (!Callback.empty())
+	if (gLogApi.EventEnabled(__func__))
 	{
-		this->m_Event.clear();
-
-		if (!FNullEnt(pEdict))
+		if (!Callback.empty())
 		{
-			this->m_Event["Event"] = Callback;
+			this->m_Event.clear();
 
-			this->m_Event["Server"] = gLogApi.GetServerInfo();
+			if (!FNullEnt(pEdict))
+			{
+				this->m_Event["Event"] = Callback;
 
-			this->m_Event["Player"] = gLogPlayer.GetPlayerJson(pEdict);
+				this->m_Event["Server"] = gLogApi.GetServerInfo();
 
-			this->m_Event["Item"]["Info"] = Item.Info;
+				this->m_Event["Player"] = gLogPlayer.GetPlayerJson(pEdict);
 
-			this->m_Event["Item"]["Text"] = Item.Text;
+				this->m_Event["Item"]["Info"] = Item.Info;
 
-			this->m_Event["Item"]["Disabled"] = Item.Disabled;
+				this->m_Event["Item"]["Text"] = Item.Text;
 
-			this->m_Event["Item"]["Extra"] = Item.Extra;
+				this->m_Event["Item"]["Disabled"] = Item.Disabled;
+
+				this->m_Event["Item"]["Extra"] = Item.Extra;
+			}
+
+			gLogApi.SendEvent(LogApi::Events::ClientMenuHandle, this->m_Event);
 		}
-
-		gLogApi.SendEvent(LogApi::Events::ClientMenuHandle, this->m_Event);
 	}
 }

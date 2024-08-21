@@ -1,7 +1,7 @@
 #pragma once
 
 // Log API Settings
-constexpr auto LOG_API_FILE_EVENTS = "cstrike/addons/logapi/events.cfg";
+constexpr auto LOG_API_FILE_EVENTS = "cstrike/addons/logapi/events.json";
 
 class CLogApi
 {
@@ -54,7 +54,7 @@ private:
 	cvar_t* m_log_api_address;
 	cvar_t* m_log_api_timeout;
 	cvar_t* m_log_api_bearer;
-	cvar_t* log_api_delay;
+	cvar_t* m_log_api_delay;
 
 	// Events
 	std::map<std::string, int> m_Events;
