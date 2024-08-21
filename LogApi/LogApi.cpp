@@ -21,6 +21,9 @@ void CLogApi::ServerActivate()
 	// Server Info Event Delay (Delay to update Server Info on webserver)
 	this->m_log_api_delay = gLogUtil.CvarRegister("log_api_delay", "60.0");
 
+	// Execute Settings File
+	g_engfuncs.pfnServerCommand("exec addons/logapi/logapi.cfg\n");
+
 	try
 	{
 		// File stream
