@@ -46,6 +46,12 @@ void CLogApi::ServerActivate()
 				// Insert event as enabled / disabled
 				this->m_Events.insert(std::make_pair(event.key(), event.value().get<bool>()));
 			}
+
+			for (auto const & ev : this->m_Events)
+			{
+				// Event Log
+				LOG_CONSOLE(PLID, "[%s] %s: %d", __func__, ev.first.c_str(), ev.second);
+			}
 		}
 		else
 		{
@@ -111,17 +117,26 @@ int CLogApi::EventEnabled(const char* EventName)
 // Send event
 void CLogApi::SendEvent(int EventIndex, nlohmann::ordered_json Event)
 {
-	// If log api is enabled
-	if (this->m_log_api_on->value)
+	if (this->m_log_api_address)
 	{
-		// If log api has target address
-		if (this->m_log_api_address->string)
+		// If log api is enabled
+		if (this->m_log_api_on->value)
 		{
-			// If JSON is not empty
-			if (!Event.empty())
+			// If log api has target address
+			if (this->m_log_api_address->string)
 			{
-				// POST to webserver
-				gLogCurl.PostJSON(this->m_log_api_address->string, (long)this->m_log_api_timeout->value, this->m_log_api_bearer->string, Event.dump(), (void*)this->CallbackResult, EventIndex);
+				// If JSON is not empty
+				if (!Event.empty())
+				{
+					if (this->m_log_api_timeout)
+					{
+						if (this->m_log_api_bearer)
+						{
+							// POST to webserver
+							gLogCurl.PostJSON(this->m_log_api_address->string, (long)this->m_log_api_timeout->value, this->m_log_api_bearer->string, Event.dump(), (void*)this->CallbackResult, EventIndex);
+						}
+					}
+				}
 			}
 		}
 	}

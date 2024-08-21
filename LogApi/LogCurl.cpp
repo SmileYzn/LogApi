@@ -88,7 +88,7 @@ void CLogCurl::PostJSON(const char* url, long Timeout, std::string BearerToken, 
 
 				struct curl_slist* chHeaders = curl_slist_append(NULL, "Content-Type: application/json");
 
-				if (!BearerToken.empty()) 
+				if (BearerToken.length() > 0) 
 				{
 					std::string AuthorizationHeader = "Authorization: Bearer " + BearerToken;
 
