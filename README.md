@@ -1,18 +1,16 @@
 <p align="center">
     <a href="https://github.com/SmileYzn/LogApi/issues"><img alt="GitHub Issues" src="https://img.shields.io/github/issues-raw/smileyzn/LogApi?style=flat-square"></a>
-    <a href="https://github.com/SmileYzn/LogApi/actions"><img alt="GitHub Workflow Status" src="https://img.shields.io/github/actions/workflow/status/SmileYzn/LogApi/msbuild.yml?branch=main&label=Windows&style=flat-square"></a>
-    <a href="https://github.com/SmileYzn/LogApi/actions"><img alt="GitHub Workflow Status" src="https://img.shields.io/github/actions/workflow/status/smileyzn/LogApi/makefile.yml?branch=main&label=Linux&style=flat-square"></a>
-    <a href="https://github.com/SmileYzn/LogApi/releases/latest"><img src="https://img.shields.io/github/downloads/SmileYzn/LogApi/total?label=Download%40latest&style=flat-square&logo=github&logoColor=white" alt="Download"></a>
+    <a href="https://github.com/SmileYzn/LogApi/actions"><img alt="GitHub Workflow Status" src="https://img.shields.io/github/actions/workflow/status/SmileYzn/LogApi/build.yml?branch=main&label=C/C++&style=flat-square"></a>
 </p>
 
-# HLDS Log API
+# ReHLDS Log API
 MetaMod Plugin that uses JSON API to comunicate with WebServer using HTTP/S Protocol.
 
 ## What that plugin do
 The Plugin sends requests to a webserver using JSON format.
-And it can get responses from the webserver of what to do on the HLDS side using specific data models.
+And it can get responses from the webserver of what to do on the ReHLDS side using specific data models.
 
-The main idea is control HLDS server using server or player events, that will be handled by webserver.
+The main idea is control ReHLDS server using server or player events, that will be handled by webserver.
 Like create a ban system, register system, live server list or something that envolves webservers, databases, players and much more.
 
 ## Visit our documentation
@@ -28,40 +26,46 @@ You can learn what LogAPI can do in HLDS server, control the events, create resp
 | log_api_delay    |   60.0  |    No    | Delay to update Server Info on webserver                   |
 
 ## Enable / Disable events
-To enable what event will be sent to webserver, edit events.cfg file.
-The settings will be work after server change level or restart.
+To enable what event will be sent to webserver, edit events.json file.
+The settings will be work after server restart.
 
 ```
-ServerActivate 		0
-ServerDeactivate 	0
-ServerAlertMessage 	0
-ServerInfo 		0
-ClientConnect 		0
-ClientPutInServer 	0
-ClientDisconnect 	0
-ClientKill 		0
-ClientUserInfoChanged 	0
-ClientCommand 		0
-ClientSay 		0
+{
+	"ServerActivate": 		false,
+	"ServerDeactivate": 		false,
+	"ServerAlertMessage": 		false,
+	"ServerInfo": 			false,
+	"ClientConnect":		false,
+	"ClientPutInServer":		false,
+	"ClientDisconnect":		false,
+	"ClientKill": 			false,
+	"ClientUserInfoChanged": 	false,
+	"ClientCommand": 		false,
+	"ClientSay": 			false,
+	"ClientMenuHandle":		false
+}
 ```
 
 ## There is a small PHP Example
 See how webserver can handle some of events using PHP.
 In the example, when player join in server the webserver will return a chat message to all players, and do a sv_restart command.
 
-1. Enable ClientPutInServer event on events.cfg
+1. Enable ClientPutInServer event on events.json
 ```
-ServerActivate 		0
-ServerDeactivate 	0
-ServerAlertMessage 	0
-ServerInfo 		0
-ClientConnect 		0
-ClientPutInServer 	1
-ClientDisconnect 	0
-ClientKill 		0
-ClientUserInfoChanged 	0
-ClientCommand 		0
-ClientSay 		0
+{
+	"ServerActivate": 		false,
+	"ServerDeactivate": 		false,
+	"ServerAlertMessage": 		false,
+	"ServerInfo": 			false,
+	"ClientConnect":		false,
+	"ClientPutInServer":		true,
+	"ClientDisconnect":		false,
+	"ClientKill": 			false,
+	"ClientUserInfoChanged": 	false,
+	"ClientCommand": 		false,
+	"ClientSay": 			false,
+	"ClientMenuHandle":		false
+}
 ```
 
 2. Configure variables on HLDS side (At logapi.cfg file)
@@ -103,7 +107,7 @@ log_api_delay "60.0"
 ```PHP
 <?php
 // Include the LogAPI Class
-include("LogAPI.php");
+include("LogApi.php");
 
 // Set PHP to return content type as json
 header('Content-Type: application/json');
