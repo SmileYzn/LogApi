@@ -39,7 +39,7 @@ class LogAPI
      * @param string $EdictCount        Entity Count in Server (Number of edict)
      * @param string $ClientMax         Number of maximum allowed clients in server
      * 
-     * @return mixed                    Array containing LogAPI commands or null
+     * @return mixed                    Array containing LogAPI commands to server or null
      */
     protected function ServerActivate($Event, $Server, $EdictCount, $ClientMax)
     {
@@ -52,7 +52,7 @@ class LogAPI
      * @param string $Event             Event Name
      * @param array $Server		Server information data
      * 
-     * @return mixed                    Array containing LogAPI commands or null
+     * @return mixed                    Array containing LogAPI commands to server or null
      */
     protected function ServerDeactivate($Event, $Server)
     {
@@ -67,7 +67,7 @@ class LogAPI
      * @param string $Type              Alert Mesasge Type (Always 5 at_logged)
      * @param string $Message           Log string
      * 
-     * @return mixed                    Array containing LogAPI commands or null
+     * @return mixed                    Array containing LogAPI commands to server or null
      */
     protected function ServerAlertMessage($Event, $Server, $Type, $Message)
     {
@@ -80,7 +80,7 @@ class LogAPI
      * @param string $Event             Event Name
      * @param array $Server		Server information data
      *
-     * @return mixed                    Array containing LogAPI commands or null
+     * @return mixed                    Array containing LogAPI commands to server or null
      */
     protected function ServerInfo($Event, $Server)
     {
@@ -94,7 +94,7 @@ class LogAPI
      * @param array $Server		Server information data
      * @param array $Player		Player information data
      * 
-     * @return mixed                    Array containing LogAPI commands or null
+     * @return mixed                    Array containing LogAPI commands to server or null
      */
     protected function ClientConnect($Event, $Server, $Player)
     {
@@ -122,7 +122,7 @@ class LogAPI
      * @param array $Server		Server information data
      * @param array $Player		Player information data
      * 
-     * @return mixed                    Array containing LogAPI commands or null
+     * @return mixed                    Array containing LogAPI commands to server or null
      */
     protected function ClientDisconnect($Event, $Server, $Player)
     {
@@ -151,7 +151,7 @@ class LogAPI
      * @param array $Player		Player information data
      * @param string $InfoBuffer        KeyInfoBuffer
      * 
-     * @return mixed                    Array containing LogAPI commands or null
+     * @return mixed                    Array containing LogAPI commands to server or null
      */
     protected function ClientUserInfoChanged($Event, $Server, $Player, $InfoBuffer)
     {
@@ -167,7 +167,7 @@ class LogAPI
      * @param string $Command           Command
      * @param string $Args              Command Arguments
      * 
-     * @return mixed                    Array containing LogAPI commands or null
+     * @return mixed                    Array containing LogAPI commands to server or null
      */
     protected function ClientCommand($Event, $Server, $Player, $Command, $Args)
     {
@@ -183,9 +183,27 @@ class LogAPI
      * @param string $Type              Type (say or say_team)
      * @param string $Message           Message sent
      * 
-     * @return mixed                    Array containing LogAPI commands or null
+     * @return mixed                    Array containing LogAPI commands to server or null
      */
     protected function ClientSay($Event, $Server, $Player, $Type, $Message)
+    {
+        return null;
+    }
+
+    /**
+     * On Client menu handle command
+     * 
+     * @param string $Event     Event Name (Menu callback name)
+     * @param array $Server     Server information data
+     * @param array $Player     Player information data
+     * @param string $Info     Info string passed to menu item option
+     * @param string $Text     Text of option string passed to menu item
+     * @param boolean $Disabled     This option is disabled or not
+     * @param string $Extra     Extra information string passed to menu item option
+     *
+     * @return mixed                    Array containing LogAPI commands to server or null
+     */
+    protected function ClientMenuHandle($Event, $Server, $Player, $Info, $Text, $Disabled, $Extra)
     {
         return null;
     }
