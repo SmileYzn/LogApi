@@ -104,8 +104,6 @@ bool CLogMenu::Handle(int EntityIndex, int Key)
 						}
 					}
 				}
-
-				return true;
 			}
 			else
 			{
