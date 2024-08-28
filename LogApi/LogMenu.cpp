@@ -100,9 +100,7 @@ bool CLogMenu::Handle(int EntityIndex, int Key)
 
 						if (this->m_Func)
 						{
-							bool result = ((bool(*)(int, std::string Callback, P_MENU_ITEM))this->m_Func)(EntityIndex, this->m_Callback, this->m_Data[ItemIndex]);
-
-							return result;
+							((void(*)(int, std::string Callback, P_MENU_ITEM))this->m_Func)(EntityIndex, this->m_Callback, this->m_Data[ItemIndex]);
 						}
 					}
 				}
