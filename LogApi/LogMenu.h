@@ -30,7 +30,7 @@ private:
 	std::string m_Text;
 	std::string m_Callback;
 	std::vector<P_MENU_ITEM> m_Data;
-	int m_Page = 0;
+	int m_Page = -1;
 	bool m_Exit = false;
 	int m_PageOption = MENU_PAGE_OPTION;
 	void* m_Func = nullptr;
