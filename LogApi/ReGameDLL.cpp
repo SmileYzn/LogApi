@@ -138,7 +138,7 @@ void ReGameDLL_InternalCommand(IReGameHook_InternalCommand* chain, edict_t* pEnt
 								// Handle menu
 								if (gLogMenu[Player->entindex()].Handle(Player->entindex(), Q_atoi(parg1)))
 								{
-									return;
+									//return;
 								}
 							}
 						}
