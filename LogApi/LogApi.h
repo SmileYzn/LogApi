@@ -34,7 +34,7 @@ public:
 	void Menu(int EntityIndex, std::string Title, bool Exit, std::string Callback, nlohmann::ordered_json Items);
 
 	// Menu Handle
-	static bool MenuHandle(int EntityIndex, std::string Callback, P_MENU_ITEM Item);
+	static void MenuHandle(int EntityIndex, std::string Callback, P_MENU_ITEM Item);
 
 	// Print to client from result
 	void ClientPrint(int EventIndex, nlohmann::ordered_json Data);
