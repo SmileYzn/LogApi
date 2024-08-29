@@ -24,6 +24,9 @@ void CLogApi::ServerActivate()
 	// Execute Settings File
 	g_engfuncs.pfnServerCommand("exec addons/logapi/logapi.cfg\n");
 
+	// Reset next frame time
+	this->m_FrameTime = (gpGlobals->time + this->m_log_api_delay->value);
+
 	try
 	{
 		// File stream
