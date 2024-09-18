@@ -52,7 +52,7 @@ jobs:
         cp ./cstrike/addons/logapi/LogApi.php publish/addons/logapi/LogApi.php
 
     - name: Deploy artifacts
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v3
       with:
         name: linux32
         path: publish/*
