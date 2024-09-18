@@ -15,7 +15,7 @@ COMPILER 	= g++
 OBJECTS 	= *.cpp
 
 # Linker Libs
-LINKER 		= -lcurl -lssl -lcrypto -ldl -lm -lz
+LINKER 		= -static-libgcc -static-libstdc++ -static-libssl -lcurl -lssl -lcrypto -ldl -lm -lz
 
 # C flags
 CFLAGS 		= -std=gnu++11 -pipe -g0 -O3 -s -flto -funroll-loops -fno-stack-protector -g -DNDEBUG -Dlinux -D__linux__ -D_GLIBCXX_USE_CXX11_ABI=0 -DCURL_STATICLIB -DHTTP_ONLY -m32 -msse3 -msse4.1 -shared
