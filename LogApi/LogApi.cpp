@@ -207,6 +207,9 @@ void CLogApi::CallbackResult(CURL* ch, size_t Size, const char* Memory, int Even
 				LOG_CONSOLE(PLID, "[%s] Unknow response from server: HTTP Code %d, check log_api_address.", __func__, HttpResponseCode);
 			}
 		}
+
+		// Clear
+		curl_easy_cleanup(ch);
 	}
 }
 
