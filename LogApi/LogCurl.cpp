@@ -113,23 +113,32 @@ void CLogCurl::PostJSON(const char* url, long Timeout, std::string BearerToken, 
 
 size_t CLogCurl::WriteMemoryCallback(void* contents, size_t size, size_t nmemb, void* userp)
 {
-	size_t realsize = size * nmemb;
-
-	P_CURL_MOD_MEMORY* mem = (P_CURL_MOD_MEMORY*)userp;
-
-	char* ptr = (char*)realloc(mem->Memory, mem->Size + realsize + 1);
-
-	if (ptr)
+	if (contents)
 	{
-		mem->Memory = ptr;
+		if (userp)
+		{
+			size_t realsize = size * nmemb;
 
-		memcpy(&(mem->Memory[mem->Size]), contents, realsize);
-
-		mem->Size += realsize;
-
-		mem->Memory[mem->Size] = 0;
-
-		return realsize;
+			if (realsize > 0)
+			{
+				P_CURL_MOD_MEMORY* mem = (P_CURL_MOD_MEMORY*)userp;
+			
+				char* ptr = (char*)realloc(mem->Memory, mem->Size + realsize + 1);
+			
+				if (ptr)
+				{
+					mem->Memory = ptr;
+			
+					memcpy(&(mem->Memory[mem->Size]), contents, realsize);
+			
+					mem->Size += realsize;
+			
+					mem->Memory[mem->Size] = 0;
+			
+					return realsize;
+				}
+			}
+		}
 	}
 
 	return 0;
