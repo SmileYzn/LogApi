@@ -21,22 +21,21 @@ jobs:
     - name: Setup Checkout
       uses: actions/checkout@v3
 
-    - name: Fix CentOS 7 EOL repositories
-      run: |
-        sed -i.bak 's/mirrorlist/#mirrorlist/g' /etc/yum.repos.d/CentOS-*
-        sed -i.bak 's|#baseurl=http://mirror.centos.org|baseurl=http://vault.centos.org|g' /etc/yum.repos.d/CentOS-*
-
-    - name: Update cache
-      run: yes | yum -y --assumeyes makecache
+    - name: Add i386 architecture
+      run: dpkg --add-architecture i386
+      
+    - name: Update repository
+      run: apt-get update
 
     - name: Install build dependencies
-      run: yes | yum -y --assumeyes install @'Development Tools' wget glibc-devel.i686 libgcc.i686 libstdc++-devel.i686 libgcc.i686 libstdc++-static.i686 libcurl-devel.i686 openssl-devel.i686 libzip-devel.i686
-
+      run: apt-get install -qq -y wget unzip build-essential gcc-4.8-multilib g++-4.8-multilib libgcc1:i386
+    
+    - name: Update alternatives
+      run: update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-4.8 100 --slave /usr/bin/g++ g++ /usr/bin/g++-4.8
+   
     - name: Run build
       working-directory: ./LogApi
-      run: |
-        export CPATH=$CPATH:/usr/include/c++/4.8.5/i686-redhat-linux
-        make
+      run: make
     
     - name: Move release file to publish
       run: |
