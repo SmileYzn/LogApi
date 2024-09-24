@@ -27,12 +27,6 @@ void CLogApi::ServerActivate()
 	// Reset next frame time
 	this->m_FrameTime = (gpGlobals->time + this->m_log_api_delay->value);
 
-	// Clear events
-	if (!this->m_Events.empty())
-	{
-		this->m_Events.clear();
-	}
-	
 	try
 	{
 		// File stream
