@@ -67,12 +67,6 @@ void CLogApi::ServerActivate()
 				// Insert event as enabled / disabled
 				this->m_Events.insert(std::make_pair(event.key(), event.value().get<bool>()));
 			}
-
-			for (auto const & ev : this->m_Events)
-			{
-				// Event Log
-				LOG_CONSOLE(PLID, "[%s] %s: %d", __func__, ev.first.c_str(), ev.second);
-			}
 		}
 		else
 		{
