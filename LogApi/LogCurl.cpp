@@ -76,7 +76,7 @@ void CLogCurl::PostJSON(const char* url, long Timeout, std::string BearerToken, 
 
 				curl_easy_setopt(ch, CURLOPT_TIMEOUT, (Timeout) > 0 ? Timeout : 5);
 
-				curl_easy_setopt(ch, CURLOPT_TCP_KEEPALIVE, 1L);
+				//curl_easy_setopt(ch, CURLOPT_TCP_KEEPALIVE, 1L);
 
 				curl_easy_setopt(ch, CURLOPT_FOLLOWLOCATION, 1L);
 
