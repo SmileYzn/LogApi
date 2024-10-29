@@ -23,7 +23,7 @@ private:
 
 	long m_RequestIndex = 0;
 
-	std::map<int, P_CURL_MOD_MEMORY> m_Data;
+	std::map<long, P_CURL_MOD_MEMORY> m_Data;
 };
 
 extern CLogCurl gLogCurl;
