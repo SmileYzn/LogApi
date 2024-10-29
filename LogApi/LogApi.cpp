@@ -90,7 +90,7 @@ void CLogApi::ServerFrame()
 			// If frame time was passed
 			if (gpGlobals->time >= this->m_FrameTime)
 			{
-				// Is Running?
+				// Is Running
 				if (this->m_Running)
 				{
 					// Send server info
@@ -133,23 +133,28 @@ int CLogApi::EventEnabled(const char* EventName)
 // Send event
 void CLogApi::SendEvent(int EventIndex, nlohmann::ordered_json Event)
 {
-	if (this->m_log_api_address)
+	// Is Running
+	if (this->m_Running)
 	{
-		// If log api is enabled
-		if (this->m_log_api_on->value)
+		// If address is set
+		if (this->m_log_api_address)
 		{
-			// If log api has target address
-			if (this->m_log_api_address->string)
+			// If log api is enabled
+			if (this->m_log_api_on->value)
 			{
-				// If JSON is not empty
-				if (!Event.empty())
+				// If log api has target address
+				if (this->m_log_api_address->string)
 				{
-					if (this->m_log_api_timeout)
+					// If JSON is not empty
+					if (!Event.empty())
 					{
-						if (this->m_log_api_bearer)
+						if (this->m_log_api_timeout)
 						{
-							// POST to webserver
-							gLogCurl.PostJSON(this->m_log_api_address->string, (long)this->m_log_api_timeout->value, this->m_log_api_bearer->string, Event.dump(), (void*)this->CallbackResult, EventIndex);
+							if (this->m_log_api_bearer)
+							{
+								// POST to webserver
+								gLogCurl.PostJSON(this->m_log_api_address->string, (long)this->m_log_api_timeout->value, this->m_log_api_bearer->string, Event.dump(), (void*)this->CallbackResult, EventIndex);
+							}
 						}
 					}
 				}
