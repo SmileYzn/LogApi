@@ -24,6 +24,9 @@ void CLogApi::ServerActivate()
 	// Execute Settings File
 	g_engfuncs.pfnServerCommand("exec addons/logapi/logapi.cfg\n");
 
+	// Plugin is running
+	this->m_Running = true;
+
 	// Reset next frame time
 	this->m_FrameTime = (gpGlobals->time + this->m_log_api_delay->value);
 
@@ -87,11 +90,15 @@ void CLogApi::ServerFrame()
 			// If frame time was passed
 			if (gpGlobals->time >= this->m_FrameTime)
 			{
-				// Send server info
-				gLogEvent.ServerInfo();
-
-				// Set next frame time
-				this->m_FrameTime = (gpGlobals->time + this->m_log_api_delay->value);
+				// Is Running?
+				if (this->m_Running)
+				{
+					// Send server info
+					gLogEvent.ServerInfo();
+	
+					// Set next frame time
+					this->m_FrameTime = (gpGlobals->time + this->m_log_api_delay->value);
+				}
 			}
 		}
 	}
