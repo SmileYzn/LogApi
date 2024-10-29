@@ -9,6 +9,9 @@ public:
 	// On Server Activate Event
 	void ServerActivate();
 
+	// On Server Deactivate
+	void ServerDeactivate();
+
 	// On Server Frame
 	void ServerFrame();
 
