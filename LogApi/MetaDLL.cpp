@@ -60,6 +60,8 @@ void DLL_POST_ServerActivate(edict_t* pEdictList, int edictCount, int clientMax)
 
 void DLL_POST_ServerDeactivate(void)
 {
+	gLogApi.ServerDeactivate();
+	
 	gLogEvent.ServerDeactivate();
 
 	RETURN_META(MRES_IGNORED);
