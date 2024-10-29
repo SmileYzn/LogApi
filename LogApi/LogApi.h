@@ -59,6 +59,9 @@ private:
 	// Events
 	std::map<std::string, int> m_Events;
 
+	// State
+	bool m_Running = false;
+
 	// Frame time
 	float m_FrameTime = 0.0f;
 };
