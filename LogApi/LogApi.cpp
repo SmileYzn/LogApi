@@ -78,6 +78,13 @@ void CLogApi::ServerActivate()
 	}
 }
 
+// On server deactivate
+void CLogApi::ServerDeactivate()
+{
+	// Plugin is not running
+	this->m_Running = false;
+}
+
 // On server frame
 void CLogApi::ServerFrame()
 {
