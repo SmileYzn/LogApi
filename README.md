@@ -189,7 +189,7 @@ class LogAPI
 ```
 
 ## Development Alpha Stage
-Please, consider that plugin is experimental. Any feedback / request is always welcome.
+Please, consider that plugin is experimental. Any feedback / request is always welcome..
 
 ## Finally
 A Future documentation how to use it will be provided in this repository.
