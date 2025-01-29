@@ -1,61 +1,63 @@
-name: Build C/C++
-
-on:
-  push:
-    branches: [ main ]
-  pull_request:
-    branches: [ main ]
+name: Action Build System
+on: [push]
+env:
+  CONTAINER: ubuntu:18.04
 
 jobs:
   linux:
     name: Linux Build
     runs-on: ubuntu-latest
-    container: ubuntu:18.04
-
-    env:
-      ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION: true
-      ACTIONS_RUNNER_FORCED_INTERNAL_NODE_VERSION: node16
-      ACTIONS_RUNNER_FORCE_ACTIONS_NODE_VERSION: node16
 
     steps:
-    - name: Setup Checkout
-      uses: actions/checkout@v3
+    - uses: actions/checkout@v4
 
-    - name: Add i386 architecture
-      run: dpkg --add-architecture i386
-      
-    - name: Update repository
-      run: apt-get update > /dev/null
-
-    - name: Install build dependencies
-      run: apt-get install -qq -y wget unzip build-essential gcc-4.8-multilib g++-4.8-multilib libgcc1:i386 libcurl4-openssl-dev:i386 zlib1g-dev:i386 libssl-dev:i386 > /dev/null
-    
-    - name: Update alternatives
-      run: update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-4.8 100 --slave /usr/bin/g++ g++ /usr/bin/g++-4.8
-   
-    - name: Run build
-      working-directory: ./LogApi
-      run: make
-    
-    - name: Move release file to publish
+    - name: Start Docker Container
       run: |
-        # Make Accuracy Fix path
-        mkdir -p publish/addons/logapi/dlls
+        docker pull $CONTAINER
+        docker run --name build-container -d -v ${{github.workspace}}:/desktop $CONTAINER tail -f /dev/null
 
-        # Copy released file to dlls
-        cp ./LogApi/Release/logapi_mm.so publish/addons/logapi/dlls
+    - name: Install Development Tools Packages
+      env:
+        SCRIPT: |
+          # Add i386 architecture
+          dpkg --add-architecture i386
 
-        # Move settings file to folder
-        cp ./cstrike/addons/logapi/logapi.cfg publish/addons/logapi/logapi.cfg
-        cp ./cstrike/addons/logapi/events.json publish/addons/logapi/events.json
-        cp ./cstrike/addons/logapi/LogApi.php publish/addons/logapi/LogApi.php
+          # Update repository
+          apt-get update > /dev/null
+
+          # Install build dependencies
+          apt-get install -qq -y wget unzip build-essential gcc-4.8-multilib g++-4.8-multilib libgcc1:i386 libcurl4-openssl-dev:i386 zlib1g-dev:i386 libssl-dev:i386 > /dev/null
+
+          # Update alternatives
+          update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-4.8 100 --slave /usr/bin/g++ g++ /usr/bin/g++-4.8
+      run: docker exec build-container bash -c "$SCRIPT"
+
+    - name: Execute Build
+      env:
+        SCRIPT: |
+          # Open makefile directory
+          cd /desktop/LogApi
+
+          # Make Release Directory
+          mkdir -p Release
+
+          # Make linux (Without post build script)
+          make
+
+          # Make dlls path
+          mkdir -p ../cstrike/addons/logapi/dlls
+
+          # Copy release file
+          cp ./Release/logapi_mm.so ../cstrike/addons/logapi/dlls
+
+      run: docker exec build-container bash -c "$SCRIPT"
 
     - name: Deploy artifacts
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: linux32
-        path: publish/*
-        
+        path: ${{github.workspace}}/cstrike
+
   windows:
     name: Windows Build
     runs-on: windows-latest
@@ -63,34 +65,30 @@ jobs:
     env:
       SOLUTION_FILE_PATH: .
       BUILD_CONFIGURATION: Release
+      BUILD_PROJECT: LogApi
   
     steps:
-    - uses: actions/checkout@v4
+    - name: Setup Checkout
+      uses: actions/checkout@v4
 
     - name: Add MSBuild to PATH
       uses: microsoft/setup-msbuild@v2
 
-    - name: Restore NuGet packages
-      working-directory: ${{env.GITHUB_WORKSPACE}}
-      run: nuget restore ${{env.SOLUTION_FILE_PATH}}
-
     - name: Run Build
-      working-directory: ${{env.GITHUB_WORKSPACE}}
+      working-directory: ${{github.workspace}}
       run: msbuild /m /p:Configuration=${{env.BUILD_CONFIGURATION}} ${{env.SOLUTION_FILE_PATH}}
 
     - name: Move release file to publish
-      working-directory: ${{env.GITHUB_WORKSPACE}}
+      working-directory: ${{github.workspace}}
       run: |
         # Make publish directory
         mkdir publish\addons\logapi\dlls
 
-        # Move released dll to publish
-        move ${{env.BUILD_CONFIGURATION}}\*.dll publish\addons\logapi\dlls
+        # Move cstrike files to publish
+        copy ${{env.SOLUTION_FILE_PATH}}\cstrike\* publish -Recurse -Force
 
-        # Copy settings file to folder
-        cp ${{env.SOLUTION_FILE_PATH}}\cstrike\addons\logapi\logapi.cfg publish\addons\logapi\logapi.cfg
-        cp ${{env.SOLUTION_FILE_PATH}}\cstrike\addons\logapi\events.json publish\addons\logapi\events.json
-        cp ${{env.SOLUTION_FILE_PATH}}\cstrike\addons\logapi\LogApi.php publish\addons\logapi\LogApi.php
+        # Move released dll to publish
+        copy ${{env.BUILD_CONFIGURATION}}\*.dll publish\addons\logapi\dlls -Recurse -Force
 
     - name: Deploy artifacts
       uses: actions/upload-artifact@v4
