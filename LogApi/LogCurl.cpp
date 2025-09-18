@@ -38,10 +38,7 @@ void CLogCurl::ServerFrame()
 
 					if (this->m_Data.find(Index) != this->m_Data.end())
 					{
-						if (this->m_Data[Index].Callback)
-						{
-							((void(*)(CURL*, size_t, const char*, int))this->m_Data[Index].Callback)(MsgInfo->easy_handle, this->m_Data[Index].Size, this->m_Data[Index].Memory, this->m_Data[Index].CallbackData);
-						}
+						gLogApi.CallbackResult(MsgInfo->easy_handle, this->m_Data[Index].Size, this->m_Data[Index].Memory, this->m_Data[Index].EventIndex);
 
 						this->m_Data.erase(Index);
 					}
@@ -56,7 +53,7 @@ void CLogCurl::ServerFrame()
 	}
 }
 
-void CLogCurl::PostJSON(const char* url, long Timeout, std::string BearerToken, std::string PostData, void* FunctionCallback, int CallbackData)
+void CLogCurl::PostJSON(const char* url, long Timeout, std::string BearerToken, std::string PostData, int EventIndex)
 {
 	if (this->m_MultiHandle)
 	{
@@ -68,15 +65,11 @@ void CLogCurl::PostJSON(const char* url, long Timeout, std::string BearerToken, 
 			{
 				this->m_Data[this->m_RequestIndex] = { 0 };
 
-				this->m_Data[this->m_RequestIndex].Callback = FunctionCallback;
-
-				this->m_Data[this->m_RequestIndex].CallbackData = CallbackData;
+				this->m_Data[this->m_RequestIndex].EventIndex = EventIndex;
 
 				curl_easy_setopt(ch, CURLOPT_URL, url);
 
 				curl_easy_setopt(ch, CURLOPT_TIMEOUT, (Timeout) > 0 ? Timeout : 5);
-
-				//curl_easy_setopt(ch, CURLOPT_TCP_KEEPALIVE, 1L);
 
 				curl_easy_setopt(ch, CURLOPT_FOLLOWLOCATION, 1L);
 

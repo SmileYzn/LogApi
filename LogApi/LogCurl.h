@@ -4,8 +4,7 @@ struct P_CURL_MOD_MEMORY
 {
 	char* Memory;
 	size_t Size;
-	void* Callback;
-	int CallbackData;
+	int EventIndex;
 };
 
 class CLogCurl
@@ -14,7 +13,7 @@ public:
 	void ServerActivate();
 	void ServerFrame();
 
-	void PostJSON(const char* url, long Timeout, std::string BearerToken, std::string PostData, void* FunctionCallback, int CallbackData);
+	void PostJSON(const char* url, long Timeout, std::string BearerToken, std::string PostData, int EventIndex);
 
 	static size_t WriteMemoryCallback(void* contents, size_t size, size_t nmemb, void* userp);
 

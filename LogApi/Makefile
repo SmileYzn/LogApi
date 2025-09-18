@@ -10,15 +10,15 @@ NAME 		= logapi
 # Release directory
 BIN_DIR 	= Release
 
-# G++
-COMPILER 	= g++
+# C++
+COMPILER 	= c++
 OBJECTS 	= *.cpp
 
 # Linker Libs
 LINKER 		= -lcurl -lssl -lcrypto -ldl -lm -lz
 
 # C flags
-CFLAGS 		= -std=gnu++11 -pipe -g0 -O3 -s -flto -funroll-loops -fno-stack-protector -g -DNDEBUG -Dlinux -D__linux__ -D_GLIBCXX_USE_CXX11_ABI=0 -DCURL_STATICLIB -DHTTP_ONLY -m32 -msse3 -msse4.1 -shared
+CFLAGS 		= -std=c++11 -pipe -g0 -O3 -s -flto -funroll-loops -fno-stack-protector -g -DNDEBUG -Dlinux -D__linux__ -D_GLIBCXX_USE_CXX11_ABI=0 -DCURL_STATICLIB -DHTTP_ONLY -m32 -msse3 -msse4.1 -shared
 
 # Include directory
 INCLUDE 	= -I. -I$(CSSDK)/common -I$(CSSDK)/dlls -I$(CSSDK)/engine -I$(CSSDK)/game_shared -I$(CSSDK)/pm_shared -I$(CSSDK)/public -I$(METAMOD)
@@ -42,7 +42,7 @@ $(NAME): $(OBJ_LINUX)
 	$(COMPILER) $(INCLUDE) $(CFLAGS) $(OBJ_LINUX) $(LINKER) -o$(BIN_DIR)/$(NAME)_mm.so
 
 check:
-	cppcheck $(INCLUDE) --quiet --max-configs=100 --std=gnu++11 -DNDEBUG -Dlinux -D__linux__ -U_FORTIFY_SOURCE .
+	cppcheck $(INCLUDE) --quiet --max-configs=100 --std=c++11 -DNDEBUG -Dlinux -D__linux__ -U_FORTIFY_SOURCE .
 
 default: all
 

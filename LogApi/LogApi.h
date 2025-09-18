@@ -22,7 +22,7 @@ public:
 	void SendEvent(int EventIndex, nlohmann::ordered_json EventData);
 
 	// Callback Result
-	static void CallbackResult(CURL* ch, size_t Size, const char* Memory, int EventIndex);
+	void CallbackResult(CURL* ch, size_t Size, const char* Memory, int EventIndex);
 
 	// Parse Event Result
 	void EventResult(int EventIndex, nlohmann::ordered_json Result);

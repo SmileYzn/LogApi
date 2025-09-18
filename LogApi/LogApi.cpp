@@ -160,7 +160,7 @@ void CLogApi::SendEvent(int EventIndex, nlohmann::ordered_json Event)
 							if (this->m_log_api_bearer)
 							{
 								// POST to webserver
-								gLogCurl.PostJSON(this->m_log_api_address->string, (long)this->m_log_api_timeout->value, this->m_log_api_bearer->string, Event.dump(), (void*)this->CallbackResult, EventIndex);
+								gLogCurl.PostJSON(this->m_log_api_address->string, (long)this->m_log_api_timeout->value, this->m_log_api_bearer->string, Event.dump(), EventIndex);
 							}
 						}
 					}
