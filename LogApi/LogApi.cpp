@@ -50,20 +50,24 @@ void CLogApi::ServerActivate()
 			std::string buffer(fs, '\0');
 
 			// Read file to std::string buffer
-			fread(&buffer[0], 1, fs, fp);
+			size_t elements = fread(&buffer[0], 1, fs, fp);
+
+			// If read something
+			if (elements > 0)
+			{
+				// Read data
+				auto json = nlohmann::ordered_json::parse(buffer, nullptr, true, true);
+
+				// Loop each item
+				for (auto const& event : json.items())
+				{
+					// Insert event as enabled / disabled
+					this->m_Events.insert(std::make_pair(event.key(), event.value().get<bool>()));
+				}
+			}
 
 			// Close file pointer
 			fclose(fp);
-
-			// Read data
-			auto json = nlohmann::ordered_json::parse(buffer, nullptr, true, true);
-
-			// Loop each item
-			for (auto const& event : json.items())
-			{
-				// Insert event as enabled / disabled
-				this->m_Events.insert(std::make_pair(event.key(), event.value().get<bool>()));
-			}
 		}
 		else
 		{

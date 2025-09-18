@@ -1,6 +1,6 @@
 #pragma once
 
-// Log API Settings
+// Log API Events
 constexpr auto LOG_API_FILE_EVENTS = "cstrike/addons/logapi/events.json";
 
 class CLogApi
