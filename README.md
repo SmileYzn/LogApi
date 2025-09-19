@@ -109,21 +109,25 @@ log_api_delay "60.0"
 // Include the LogAPI Class
 include("LogApi.php");
 
-// Set PHP to return content type as json
-header('Content-Type: application/json');
-
-// The final default result
-$result = null;
-
-// Compare HTTP_AUTHORIZATION with bearer token of (log_api_bearer console variable on HLDS)
-if(trim(str_replace('Bearer', '', $_SERVER['HTTP_AUTHORIZATION'])) == 'YOUR_API_TOKEN_CVAR')
+// Compare HTTP_AUTHORIZATION with Bearer Token of log_api_bearer
+if(trim(str_replace('Bearer', '', $_SERVER['HTTP_AUTHORIZATION'])) == "YOUR-TOKEN-API-CODE")
 {
-	// Set the result that comes from LogAPI class
-	$result = (new LogAPI)->OnEvent();  
+    // Set PHP to return content type as json
+    header('Content-Type: application/json');
+
+    // Set the result that comes from LogAPI class
+    $result = (new LogAPI)->OnEvent();  
+
+    // Return final result encoded as json
+    die(json_encode($result));
+}
+else
+{
+    header("HTTP/1.1 401 Unauthorized");
 }
 
-// Return final result encoded as json
-die(json_encode($result));
+// Exit
+exit;
 ```
 
 4. The LogAPI.php class to handle HLDS server events, you can create other classes to handle events later.
