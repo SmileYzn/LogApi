@@ -15,7 +15,7 @@ class CLogMenu
 public:
 	void Clear();
 
-	void Create(std::string Title, std::string Callback, bool Exit, void* CallbackFunction);
+	void Create(std::string Title, std::string Callback, bool Exit);
 	void AddItem(std::string Info, std::string Text, bool Disabled, std::string Extra);
 
 	void Show(int EntityIndex);
