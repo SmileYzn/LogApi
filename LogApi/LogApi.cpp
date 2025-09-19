@@ -395,7 +395,7 @@ void CLogApi::Menu(int EntityIndex, std::string Title, bool Exit, std::string Ca
 		{
 			if (Player->IsPlayer())
 			{
-				gLogMenu[EntityIndex].Create(Title, Callback, Exit, (void*)gLogApi.MenuHandle);
+				gLogMenu[EntityIndex].Create(Title, Callback, Exit);
 
 				for (auto it = Items.begin(); it != Items.end(); ++it)
 				{
