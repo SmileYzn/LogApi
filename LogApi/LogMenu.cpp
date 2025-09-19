@@ -11,11 +11,9 @@ void CLogMenu::Clear()
 	this->m_Page = -1;
 
 	this->m_Exit = false;
-
-	this->m_Func = nullptr;
 }
 
-void CLogMenu::Create(std::string Title, std::string Callback, bool Exit, void* CallbackFunction)
+void CLogMenu::Create(std::string Title, std::string Callback, bool Exit)
 {
 	this->Clear();
 
@@ -26,8 +24,6 @@ void CLogMenu::Create(std::string Title, std::string Callback, bool Exit, void* 
 	this->m_Page = -1;
 
 	this->m_Exit = Exit;
-
-	this->m_Func = CallbackFunction;
 }
 
 void CLogMenu::AddItem(std::string Info, std::string Text, bool Disabled, std::string Extra)
@@ -97,11 +93,8 @@ bool CLogMenu::Handle(int EntityIndex, int Key)
 					if (ItemIndex < this->m_Data.size())
 					{
 						this->Hide(EntityIndex);
-
-						if (this->m_Func)
-						{
-							((void(*)(int, std::string Callback, P_MENU_ITEM))this->m_Func)(EntityIndex, this->m_Callback, this->m_Data[ItemIndex]);
-						}
+						
+						gLogApi.MenuHandle(EntityIndex, this->m_Callback, this->m_Data[ItemIndex]);
 					}
 				}
 
