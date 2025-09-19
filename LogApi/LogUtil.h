@@ -31,7 +31,6 @@ public:
 	const char* GetAuthId(edict_t* pEntity);
 	void ReplaceAll(std::string& String, const std::string& From, const std::string& To);
 	std::vector<CBasePlayer*> GetPlayers();
-private:
 	std::map<std::string, cvar_t> m_Cvar;
 };
 
