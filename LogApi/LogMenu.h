@@ -33,7 +33,6 @@ private:
 	int m_Page = -1;
 	bool m_Exit = false;
 	int m_PageOption = MENU_PAGE_OPTION;
-	void* m_Func = nullptr;
 };
 
 extern std::array<CLogMenu, MAX_CLIENTS + 1> gLogMenu;
