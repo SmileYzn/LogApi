@@ -103,14 +103,14 @@ log_api_bearer "YOUR_API_TOKEN_CVAR"
 log_api_delay "60.0"
 ```
 
-3. Le's create the api.php file (log_api_addres must be something like: https://yourwebsite.com/api.php)
+3. Let's create the api.php file (log_api_addres must be something like: https://yourwebsite.com/api.php)
 ```PHP
 <?php
 // Include the LogAPI Class
 include("LogApi.php");
 
 // Compare HTTP_AUTHORIZATION with Bearer Token of log_api_bearer
-if(trim(str_replace('Bearer', '', $_SERVER['HTTP_AUTHORIZATION'])) == "YOUR-TOKEN-API-CODE")
+if(trim(str_replace('Bearer', '', $_SERVER['HTTP_AUTHORIZATION'])) == "YOUR_API_TOKEN_CVAR")
 {
     // Set PHP to return content type as json
     header('Content-Type: application/json');
