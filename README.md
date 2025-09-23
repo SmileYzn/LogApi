@@ -11,7 +11,7 @@ The Plugin sends requests to a webserver using JSON format.
 And it can get responses from the webserver of what to do on the ReHLDS side using specific data models.
 
 The main idea is control ReHLDS server using server or player events, that will be handled by webserver.
-Like create a ban system, register system, live server list or something that envolves webservers, databases, players and much more.
+Like create a ban system, register system, live server list or something that envolves webservers, databases, players and others.
 
 ## Visit our documentation
 You can learn what LogAPI can do in HLDS server, control the events, create responses and more: [LogApi Wiki](https://github.com/SmileYzn/LogApi/wiki)
@@ -31,18 +31,18 @@ The settings will be work after server restart.
 
 ```
 {
-	"ServerActivate": 		false,
+	"ServerActivate": 		    false,
 	"ServerDeactivate": 		false,
 	"ServerAlertMessage": 		false,
-	"ServerInfo": 			false,
-	"ClientConnect":		false,
+	"ServerInfo": 			    false,
+	"ClientConnect":		    false,
 	"ClientPutInServer":		false,
-	"ClientDisconnect":		false,
-	"ClientKill": 			false,
+	"ClientDisconnect":		    false,
+	"ClientKill": 			    false,
 	"ClientUserInfoChanged": 	false,
-	"ClientCommand": 		false,
-	"ClientSay": 			false,
-	"ClientMenuHandle":		false
+	"ClientCommand": 		    false,
+	"ClientSay": 			    false,
+	"ClientMenuHandle":		    false
 }
 ```
 
@@ -53,18 +53,18 @@ In the example, when player join in server the webserver will return a chat mess
 1. Enable ClientPutInServer event on events.json
 ```
 {
-	"ServerActivate": 		false,
-	"ServerDeactivate": 		false,
-	"ServerAlertMessage": 		false,
-	"ServerInfo": 			false,
-	"ClientConnect":		false,
-	"ClientPutInServer":		true,
-	"ClientDisconnect":		false,
-	"ClientKill": 			false,
-	"ClientUserInfoChanged": 	false,
-	"ClientCommand": 		false,
-	"ClientSay": 			false,
-	"ClientMenuHandle":		false
+	"ServerActivate": 		    false,
+	"ServerDeactivate": 	    false,
+	"ServerAlertMessage": 	    false,
+	"ServerInfo": 			    false,
+	"ClientConnect":		    false,
+	"ClientPutInServer":	    true,
+	"ClientDisconnect":		    false,
+	"ClientKill": 			    false,
+	"ClientUserInfoChanged":	false,
+	"ClientCommand": 		    false,
+	"ClientSay": 			    false,
+	"ClientMenuHandle":		    false
 }
 ```
 
@@ -109,22 +109,8 @@ log_api_delay "60.0"
 // Include the LogAPI Class
 include("LogApi.php");
 
-// Compare HTTP_AUTHORIZATION with Bearer Token of log_api_bearer
-if(trim(str_replace('Bearer', '', $_SERVER['HTTP_AUTHORIZATION'])) == "YOUR_API_TOKEN_CVAR")
-{
-    // Set PHP to return content type as json
-    header('Content-Type: application/json');
-
-    // Set the result that comes from LogAPI class
-    $result = (new LogAPI)->OnEvent();  
-
-    // Return final result encoded as json
-    die(json_encode($result));
-}
-else
-{
-    header("HTTP/1.1 401 Unauthorized");
-}
+// Execute LogAPI OnEvent
+(new LogAPI)->OnEvent();
 
 // Exit
 exit;
@@ -137,29 +123,47 @@ exit;
 class LogAPI
 {
     /**
-     * On Receive Event 
+     * The log api token cvar value
+     * 
+     * @param string
      */
-    function OnEvent()
-    {
-        // Parse request as json event
-        $request = json_decode(file_get_contents('php://input'), true);
-        
-        // If event is not empty
-        if(!empty($request['Event']))
-        {
-            // If method exists
-            if(method_exists($this, $request['Event']))
-            {
-                // Process paramemeters as array
-                $parameters = array_values($request);
+    private $logApiToken = "YOUR_API_TOKEN_CVAR";
 
-                // Return from function call
-                return $this->{$request['Event']}(...$parameters);                
+    /**
+     * On Receive Event
+     */
+    public function OnEvent()
+    {
+        // Compare HTTP_AUTHORIZATION with Bearer Token of log_api_bearer
+        if (trim(str_replace('Bearer', '', $_SERVER['HTTP_AUTHORIZATION'])) == $this->logApiToken)
+        {
+            // Parse request as json event
+            $request = json_decode(file_get_contents('php://input'), true);
+            
+            // If event is not empty
+            if (!empty($request['Event']))
+            {
+                // If method exists
+                if (method_exists($this, $request['Event']))
+                {
+                    // Process paramemeters as array
+                    $parameters = array_values($request);
+
+                    // Return from function call
+                    $result = $this->{$request['Event']}(...$parameters);
+
+                    // Set PHP to return content type as json
+                    header('Content-Type: application/json');
+
+                    // Return final result encoded as json
+                    die(json_encode($result));
+                }
             }
         }
-        
-        // Return null
-        return null;
+        else
+        {
+            header("HTTP/1.1 401 Unauthorized");
+        }
     }
 
     /**
@@ -173,20 +177,20 @@ class LogAPI
      */
     protected function ClientPutInServer($Event, $Server, $Player)
     {
-	// Print Chat
-	$result["PrintChat"] =
-	[
-		// Entity Index (0) send message to all players
-		'EntityId' => 0,
+        // Print Chat
+        $result["PrintChat"] =
+        [
+            // Entity Index (0) send message to all players
+            'EntityId' => 0,
 
-		// The message string (You can use format sequence to get colors in chat)
-		'Message' => "{$Player['Name']} entered in server. Game will restart in ^35^1 seconds..."
-	];
+            // The message string (You can use format sequence to get colors in chat)
+            'Message' => "{$Player['Name']} entered in server. Game will restart in ^35^1 seconds..."
+        ];
 
-	// Return server command to HLDS
-	$result['ServerCommand'] = "sv_restart 5";
+        // Return server command to HLDS
+        $result['ServerCommand'] = "sv_restart 5";
 
-	// Return result to api.php, result can have multiple commands at once
+	    // Return result to api.php, result can have multiple commands at once
         return $result;
     }
 }
