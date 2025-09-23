@@ -45,9 +45,6 @@
 // cURL sources
 #include <curl/curl.h>
 
-// JSON
-#include "include/json.hpp"
-
 // CSSDK
 #include <extdll.h>
 #include <eiface.h>
@@ -67,6 +64,9 @@
 // ReAPI & ReGameDLL
 #include "ReAPI.h"
 #include "ReGameDLL.h"
+
+// JSON
+#include "include/json.hpp"
 
 // Log API
 #include "LogCvar.h"

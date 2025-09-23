@@ -1,10 +1,5 @@
 LIBRARY logapi_mm
-
 EXPORTS
-
-	GiveFnptrsToDll			@1
-
+	GiveFnptrsToDll @1
 SECTIONS
-
 	.data READ WRITE
-

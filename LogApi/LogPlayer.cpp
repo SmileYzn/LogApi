@@ -1,5 +1,4 @@
 #include "precompiled.h"
-#include "LogPlayer.h"
 
 CLogPlayer gLogPlayer;
 

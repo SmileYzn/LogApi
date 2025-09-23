@@ -12,13 +12,13 @@ CLEAN_CMD=rm -rf $(BUILD_DIR)
 # Common build definitions
 BUILD_NAME=logapi_mm
 BUILD_SOURCES=$(wildcard *.cpp)
-BUILD_CFLAGS=-std=c++11 -Wall -Wno-unknown-pragmas -fcommon -m32 -mtune=generic -msse3 -msse4.1 -msse4.2 -shared -s -pipe -g0 -O3 -fPIC -funroll-loops -fomit-frame-pointer -fno-stack-protector -fvisibility=hidden
+BUILD_CFLAGS=-std=c++11 -Wall -Wno-unknown-pragmas -fcommon -m32 -mtune=generic -msse3 -msse4.1 -shared -s -pipe -g0 -O3 -fPIC -funroll-loops -fomit-frame-pointer -fno-stack-protector -fvisibility=hidden
 BUILD_TARGET=linux32
 BUILD_EXTENSION=so
 BUILD_OBJECTS=$(BUILD_SOURCES:%.cpp=$(BUILD_DIR)/%.o)
 BUILD_COMPILER=c++
 BUILD_LINKER=-static-libgcc -static-libstdc++ -lcurl -lssl -lcrypto -ldl -lm -lz
-BUILD_CCFLAGS=$(BUILD_CFLAGS) -DNDEBUG -Dlinux -D__BUILD__ -DCURL_STATICLIB -DHTTP_ONLY
+BUILD_CCFLAGS=$(BUILD_CFLAGS) -DNDEBUG -Dlinux -D__BUILD__ -D_GLIBCXX_USE_CXX11_ABI=0 -DCURL_STATICLIB -DHTTP_ONLY
 #
 # Include directory
 SRCDIR=.

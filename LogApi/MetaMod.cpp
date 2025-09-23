@@ -269,7 +269,7 @@ void ENGINE_POST_AlertMessage(ALERT_TYPE atype, const char* szFmt, ...)
 {
 	if (atype == at_logged)
 	{
-		static char szBuffer[2048];
+		static char szBuffer[1024];
 
 		va_list vArgList;
 		va_start(vArgList, szFmt);

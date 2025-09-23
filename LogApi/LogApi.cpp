@@ -100,20 +100,28 @@ void CLogApi::ServerFrame()
 // Check if event is enabled
 int CLogApi::EventEnabled(const char* EventName)
 {
-	// If has event name
+	// If is not null
 	if (EventName)
 	{
-		// If log api is enabled
-		if (gLogCvar.m_Enable->value)
+		// If string is not empty
+		if (EventName[0u] != '\0')
 		{
-			// If log api has target address
-			if (gLogCvar.m_Address->string)
+			// If log api is enabled
+			if (gLogCvar.m_Enable->value)
 			{
-				// Find event by name
-				if (this->m_Events.find(EventName) != this->m_Events.end())
+				// If log api has target address
+				if (gLogCvar.m_Address->string)
 				{
-					// Retorn enable / disabled
-					return this->m_Events[EventName];
+					// If events is not empty
+					if (!this->m_Events.empty())
+					{
+						// Find event by name
+						if (this->m_Events.find(EventName) != this->m_Events.end())
+						{
+							// Retorn enable / disabled
+							return this->m_Events[EventName];
+						}
+					}
 				}
 			}
 		}

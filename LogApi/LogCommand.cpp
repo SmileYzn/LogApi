@@ -2,10 +2,13 @@
 
 CLogCommand gLogCommand;
 
+// On Server Activate
 void CLogCommand::ServerActivate()
 {
+	// Clear hud line
 	this->m_HudLine = 0;
 	
+	// Register server commands
 	g_engfuncs.pfnAddServerCommand("log_say", this->Say);
 	g_engfuncs.pfnAddServerCommand("log_tsay", this->TeamSay);
 	g_engfuncs.pfnAddServerCommand("log_csay", this->CenterSay);
@@ -15,6 +18,7 @@ void CLogCommand::ServerActivate()
 	g_engfuncs.pfnAddServerCommand("log_send_info", this->ServerInfo);
 }
 
+// Say
 void CLogCommand::Say()
 {
 	if (g_engfuncs.pfnCmd_Argc() >= 2)
@@ -34,6 +38,7 @@ void CLogCommand::Say()
 	LOG_CONSOLE(PLID, "[%s] Usage: log_say <message>", Plugin_info.logtag);
 }
 
+// Team Say
 void CLogCommand::TeamSay()
 {
 	if (g_engfuncs.pfnCmd_Argc() >= 2)
@@ -53,6 +58,7 @@ void CLogCommand::TeamSay()
 	LOG_CONSOLE(PLID, "[%s] Usage: log_tsay <message>", Plugin_info.logtag);
 }
 
+// Center Say
 void CLogCommand::CenterSay()
 {
 	if (g_engfuncs.pfnCmd_Argc() >= 2)
@@ -72,6 +78,7 @@ void CLogCommand::CenterSay()
 	LOG_CONSOLE(PLID, "[%s] Usage: log_csay <message>", Plugin_info.logtag);
 }
 
+// Private Say
 void CLogCommand::PrivateSay()
 {
 	if (g_engfuncs.pfnCmd_Argc() >= 3)
@@ -111,6 +118,7 @@ void CLogCommand::PrivateSay()
 	LOG_CONSOLE(PLID, "[%s] Usage: log_psay <name or #userid> <message>", Plugin_info.logtag);
 }
 
+// Console Log
 void CLogCommand::ConsoleLog()
 {
 	if (g_engfuncs.pfnCmd_Argc() >= 3)
@@ -150,6 +158,7 @@ void CLogCommand::ConsoleLog()
 	LOG_CONSOLE(PLID, "[%s] Usage: log_console <name or #userid> <message>", Plugin_info.logtag);
 }
 
+// Open MOTD
 void CLogCommand::OpenMotd()
 {
 	if (g_engfuncs.pfnCmd_Argc() >= 3)
@@ -197,9 +206,29 @@ void CLogCommand::OpenMotd()
 	LOG_CONSOLE(PLID, "[%s] Usage: log_motd <name or #userid> <webpage or file name>", Plugin_info.logtag);
 }
 
+// Send Server Information
 void CLogCommand::ServerInfo()
 {
 	gLogEvent.ServerInfo();
 
 	LOG_CONSOLE(PLID, "[%s] Server info sent to webserver.", Plugin_info.logtag);
+}
+
+// Get Hudmessage Parameters
+hudtextparms_t CLogCommand::GetHudParameters(bool TeamSay)
+{
+	hudtextparms_t hud = { -1.0f, -1.0f, 1, 255, 255, 255, 255, 0, 255, 0, 255, 0.5f, 0.5f, 6.0f, 6.0f, -1 };
+
+	if (++this->m_HudLine > 6 || this->m_HudLine < 3)
+	{
+		this->m_HudLine = 3;
+	}
+
+	hud.x = TeamSay ? 0.05 : -1.0;
+
+	hud.y = ((TeamSay ? 0.55f : 0.1f) + float(this->m_HudLine) / 30.0f);
+
+	hud.channel = (this->m_HudLine - 2);
+
+	return hud;
 }
