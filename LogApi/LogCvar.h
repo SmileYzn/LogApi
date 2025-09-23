@@ -17,7 +17,7 @@ public:
 	cvar_t* m_Delay;
 
     // Public cvar data
-    std::map<std::string, cvar_t> m_Data = {};
+    std::map<std::string, cvar_t> m_Data;
 };
 
 extern CLogCvar gLogCvar;

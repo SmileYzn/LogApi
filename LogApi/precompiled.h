@@ -32,10 +32,10 @@
 #include <osconfig.h>
 
 // C++
-#include <array>
 #include <map>
 #include <vector>
 #include <string>
+#include <array>
 
 // cURL sources
 #ifndef CURL_STATICLIB
