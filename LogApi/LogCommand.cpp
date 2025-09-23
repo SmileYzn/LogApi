@@ -4,6 +4,8 @@ CLogCommand gLogCommand;
 
 void CLogCommand::ServerActivate()
 {
+	this->m_HudLine = 0;
+	
 	g_engfuncs.pfnAddServerCommand("log_say", this->Say);
 	g_engfuncs.pfnAddServerCommand("log_tsay", this->TeamSay);
 	g_engfuncs.pfnAddServerCommand("log_csay", this->CenterSay);
