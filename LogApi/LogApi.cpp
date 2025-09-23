@@ -9,8 +9,20 @@ void CLogApi::ServerActivate()
 	// Plugin is running
 	this->m_Running = true;
 
-	// Reset next frame time
-	this->m_FrameTime = (gpGlobals->time + gLogCvar.m_Delay->value);
+	// If has Delay cvar
+	if (gLogCvar.m_Delay)
+	{
+		// If has Delay cvar value
+		if (gLogCvar.m_Delay->value > 0.0f)
+		{
+			// Reset next frame time
+			this->m_FrameTime = (gpGlobals->time + gLogCvar.m_Delay->value);
+		}
+	}
+	else
+	{
+		this->m_FrameTime = (gpGlobals->time + 60.0);
+	}
 
 	try
 	{
@@ -107,19 +119,26 @@ int CLogApi::EventEnabled(const char* EventName)
 		if (EventName[0u] != '\0')
 		{
 			// If log api is enabled
-			if (gLogCvar.m_Enable->value)
+			if (gLogCvar.m_Enable)
 			{
-				// If log api has target address
-				if (gLogCvar.m_Address->string)
+				if (gLogCvar.m_Enable->value)
 				{
-					// If events is not empty
-					if (!this->m_Events.empty())
+					// If log api has address
+					if (gLogCvar.m_Address)
 					{
-						// Find event by name
-						if (this->m_Events.find(EventName) != this->m_Events.end())
+						// If log api has target address
+						if (gLogCvar.m_Address->string)
 						{
-							// Retorn enable / disabled
-							return this->m_Events[EventName];
+							// If events is not empty
+							if (!this->m_Events.empty())
+							{
+								// Find event by name
+								if (this->m_Events.find(EventName) != this->m_Events.end())
+								{
+									// Retorn enable / disabled
+									return this->m_Events[EventName];
+								}
+							}
 						}
 					}
 				}
@@ -140,21 +159,25 @@ void CLogApi::SendEvent(int EventIndex, nlohmann::ordered_json Event)
 		// If address is set
 		if (gLogCvar.m_Address)
 		{
-			// If log api is enabled
-			if (gLogCvar.m_Enable->value)
+			// If is enabled
+			if (gLogCvar.m_Enable)
 			{
-				// If log api has target address
-				if (gLogCvar.m_Address->string)
+				// If log api is enabled
+				if (gLogCvar.m_Enable->value)
 				{
-					// If JSON is not empty
-					if (!Event.empty())
+					// If log api has target address
+					if (gLogCvar.m_Address->string)
 					{
-						if (gLogCvar.m_Timeout)
+						// If JSON is not empty
+						if (!Event.empty())
 						{
-							if (gLogCvar.m_Bearer)
+							if (gLogCvar.m_Timeout)
 							{
-								// POST to webserver
-								gLogCurl.PostJSON(gLogCvar.m_Address->string, (long)gLogCvar.m_Timeout->value, gLogCvar.m_Bearer->string, Event.dump(), EventIndex);
+								if (gLogCvar.m_Bearer)
+								{
+									// POST to webserver
+									gLogCurl.PostJSON(gLogCvar.m_Address->string, (long)gLogCvar.m_Timeout->value, gLogCvar.m_Bearer->string, Event.dump(), EventIndex);
+								}
 							}
 						}
 					}

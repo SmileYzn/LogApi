@@ -276,7 +276,7 @@ void ENGINE_POST_AlertMessage(ALERT_TYPE atype, const char* szFmt, ...)
 		vsprintf(szBuffer, szFmt, vArgList);
 		va_end(vArgList);
 
-		if (szBuffer[0])
+		if (szBuffer[0u] != '\0')
 		{
 			gLogEvent.ServerAlertMessage(atype, szBuffer);
 		}

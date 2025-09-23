@@ -40,17 +40,20 @@ void CLogEvent::ServerAlertMessage(ALERT_TYPE aType, const char* szBuffer)
 	{
 		if (szBuffer)
 		{
-			this->m_Event.clear();
+			if (szBuffer[0u] != '\0')
+			{
+				this->m_Event.clear();
 
-			this->m_Event["Event"] = __func__;
+				this->m_Event["Event"] = __func__;
 
-			this->m_Event["Server"] = gLogApi.GetServerInfo();
+				this->m_Event["Server"] = gLogApi.GetServerInfo();
 
-			this->m_Event["Type"] = aType;
+				this->m_Event["Type"] = aType;
 
-			this->m_Event["Message"] = szBuffer;
+				this->m_Event["Message"] = szBuffer;
 
-			gLogApi.SendEvent(LogApi::Events::ServerAlertMessage, this->m_Event);
+				gLogApi.SendEvent(LogApi::Events::ServerAlertMessage, this->m_Event);
+			}
 		}
 	}
 }
