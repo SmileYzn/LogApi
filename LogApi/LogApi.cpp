@@ -6,29 +6,11 @@ CLogApi gLogApi;
 // On server activate event
 void CLogApi::ServerActivate()
 {
-	// Enable Log API (0 Disable, 1 Enable)
-	this->m_log_api_on = gLogUtil.CvarRegister("log_api_enable", "0");
-
-	// Set Log API Address (API HTTP/s Address Ie. https://api.yoursite.com/)
-	this->m_log_api_address = gLogUtil.CvarRegister("log_api_address", "");
-
-	// Set Log API Timeout (Timeout in seconds to wait for response from remote server)
-	this->m_log_api_timeout = gLogUtil.CvarRegister("log_api_timeout", "5.0");
-
-	// Set Log API Bearer Token (Authentication Token or leave empty to disable)
-	this->m_log_api_bearer = gLogUtil.CvarRegister("log_api_bearer", "");
-
-	// Server Info Event Delay (Delay to update Server Info on webserver)
-	this->m_log_api_delay = gLogUtil.CvarRegister("log_api_delay", "60.0");
-
-	// Execute Settings File
-	g_engfuncs.pfnServerCommand("exec addons/logapi/logapi.cfg\n");
-
 	// Plugin is running
 	this->m_Running = true;
 
 	// Reset next frame time
-	this->m_FrameTime = (gpGlobals->time + this->m_log_api_delay->value);
+	this->m_FrameTime = (gpGlobals->time + gLogCvar.m_Delay->value);
 
 	try
 	{
@@ -93,10 +75,10 @@ void CLogApi::ServerDeactivate()
 void CLogApi::ServerFrame()
 {
 	// If variable is not null
-	if (this->m_log_api_delay)
+	if (gLogCvar.m_Delay)
 	{
 		// If is set more than 5 seconds
-		if (this->m_log_api_delay->value > 5.0f)
+		if (gLogCvar.m_Delay->value > 5.0f)
 		{
 			// If frame time was passed
 			if (gpGlobals->time >= this->m_FrameTime)
@@ -108,7 +90,7 @@ void CLogApi::ServerFrame()
 					gLogEvent.ServerInfo();
 	
 					// Set next frame time
-					this->m_FrameTime = (gpGlobals->time + this->m_log_api_delay->value);
+					this->m_FrameTime = (gpGlobals->time + gLogCvar.m_Delay->value);
 				}
 			}
 		}
@@ -122,10 +104,10 @@ int CLogApi::EventEnabled(const char* EventName)
 	if (EventName)
 	{
 		// If log api is enabled
-		if (this->m_log_api_on->value)
+		if (gLogCvar.m_Enable->value)
 		{
 			// If log api has target address
-			if (this->m_log_api_address->string)
+			if (gLogCvar.m_Address->string)
 			{
 				// Find event by name
 				if (this->m_Events.find(EventName) != this->m_Events.end())
@@ -148,23 +130,23 @@ void CLogApi::SendEvent(int EventIndex, nlohmann::ordered_json Event)
 	if (this->m_Running)
 	{
 		// If address is set
-		if (this->m_log_api_address)
+		if (gLogCvar.m_Address)
 		{
 			// If log api is enabled
-			if (this->m_log_api_on->value)
+			if (gLogCvar.m_Enable->value)
 			{
 				// If log api has target address
-				if (this->m_log_api_address->string)
+				if (gLogCvar.m_Address->string)
 				{
 					// If JSON is not empty
 					if (!Event.empty())
 					{
-						if (this->m_log_api_timeout)
+						if (gLogCvar.m_Timeout)
 						{
-							if (this->m_log_api_bearer)
+							if (gLogCvar.m_Bearer)
 							{
 								// POST to webserver
-								gLogCurl.PostJSON(this->m_log_api_address->string, (long)this->m_log_api_timeout->value, this->m_log_api_bearer->string, Event.dump(), EventIndex);
+								gLogCurl.PostJSON(gLogCvar.m_Address->string, (long)gLogCvar.m_Timeout->value, gLogCvar.m_Bearer->string, Event.dump(), EventIndex);
 							}
 						}
 					}

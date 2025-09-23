@@ -16,7 +16,6 @@ constexpr auto PRINT_TEAM_BLUE = -3;
 class CLogUtil
 {
 public:
-	cvar_t* CvarRegister(const char* Name, const char* Value);
 	void ServerExecute(std::string Command);
 	void ClientPrint(edict_t* pEntity, int msg_dest, const char* Format, ...);
 	void TeamInfo(edict_t* pEntity, int playerIndex, const char* pszTeamName);
@@ -31,7 +30,6 @@ public:
 	const char* GetAuthId(edict_t* pEntity);
 	void ReplaceAll(std::string& String, const std::string& From, const std::string& To);
 	std::vector<CBasePlayer*> GetPlayers();
-	std::map<std::string, cvar_t> m_Cvar;
 };
 
 extern CLogUtil gLogUtil;

@@ -1,51 +1,51 @@
-# Include CS SDK
-CSSDK 		= include/cssdk
-
-# Include Metamod SDK
-METAMOD 	= include/metamod
-
-# Release file output name
-NAME 		= logapi
-
-# Release directory
-BIN_DIR 	= Release
-
-# C++
-COMPILER 	= c++
-OBJECTS 	= *.cpp
-
-# Linker Libs
-LINKER 		= -lcurl -lssl -lcrypto -ldl -lm -lz
-
-# C flags
-CFLAGS 		= -std=c++11 -pipe -g0 -O3 -s -flto -funroll-loops -fno-stack-protector -g -DNDEBUG -Dlinux -D__linux__ -D_GLIBCXX_USE_CXX11_ABI=0 -DCURL_STATICLIB -DHTTP_ONLY -m32 -msse3 -msse4.1 -shared
-
+# Makefile settings
+MAKEFLAGS += --warn-undefined-variables --silent
+#
+# Build directory
+BUILD_DIR=Release
+#
+# System based commands
+PRE_CMD=mkdir -p $(BUILD_DIR)
+POS_CMD=sh PostBuild.sh
+CLEAN_CMD=rm -rf $(BUILD_DIR)
+#
+# Common build definitions
+BUILD_NAME=logapi_mm
+BUILD_SOURCES=$(wildcard *.cpp)
+BUILD_CFLAGS=-std=c++11 -Wall -Wno-unknown-pragmas -fcommon -m32 -mtune=generic -msse3 -msse4.1 -msse4.2 -shared -s -pipe -g0 -O3 -fPIC -funroll-loops -fomit-frame-pointer -fno-stack-protector -fvisibility=hidden
+BUILD_TARGET=linux32
+BUILD_EXTENSION=so
+BUILD_OBJECTS=$(BUILD_SOURCES:%.cpp=$(BUILD_DIR)/%.o)
+BUILD_COMPILER=c++
+BUILD_LINKER=-static-libgcc -static-libstdc++ -lcurl -lssl -lcrypto -ldl -lm -lz
+BUILD_CCFLAGS=$(BUILD_CFLAGS) -DNDEBUG -Dlinux -D__BUILD__ -DCURL_STATICLIB -DHTTP_ONLY
+#
 # Include directory
-INCLUDE 	= -I. -I$(CSSDK)/common -I$(CSSDK)/dlls -I$(CSSDK)/engine -I$(CSSDK)/game_shared -I$(CSSDK)/pm_shared -I$(CSSDK)/public -I$(METAMOD)
-
-# Linux objects to build
-OBJ_LINUX 	:= $(OBJECTS:%.c=$(BIN_DIR)/%.o)
-
-# Objects output path
-$(BIN_DIR)/%.o: %.c
-
-# Compile command
-	$(COMPILER) $(INCLUDE) $(CFLAGS) -o $@ -c $<
-
-all:
-	mkdir -p $(BIN_DIR)
-
-	$(MAKE) $(NAME) && strip -x $(BIN_DIR)/$(NAME)_mm.so
-
-$(NAME): $(OBJ_LINUX)
-
-	$(COMPILER) $(INCLUDE) $(CFLAGS) $(OBJ_LINUX) $(LINKER) -o$(BIN_DIR)/$(NAME)_mm.so
-
-check:
-	cppcheck $(INCLUDE) --quiet --max-configs=100 --std=c++11 -DNDEBUG -Dlinux -D__linux__ -U_FORTIFY_SOURCE .
-
-default: all
-
+SRCDIR=.
+METAMOD=include/metamod
+SDK=include/cssdk
+INCLUDE=-I$(SRCDIR) -I$(METAMOD) -I$(SDK)/common -I$(SDK)/dlls -I$(SDK)/engine -I$(SDK)/game_shared -I$(SDK)/pm_shared -I$(SDK)/public
+#
+# Defult: prebuild, linux32, posbuild
+default: prebuild $(BUILD_TARGET) posbuild
+#
+# Linux: prebuild, linux32, posbuild
+linux: $(BUILD_TARGET)
+#
+# Pre-build: Execute command
+prebuild:
+	$(PRE_CMD)
+#
+# Pos-build: Execute command
+posbuild:
+	$(POS_CMD)
+#
+# Linux target build
+$(BUILD_TARGET): $(BUILD_OBJECTS)
+	$(BUILD_COMPILER) $(INCLUDE) $(BUILD_CCFLAGS) $(BUILD_OBJECTS) $(BUILD_LINKER) -o$(BUILD_DIR)/$(BUILD_NAME).$(BUILD_EXTENSION)
+$(BUILD_DIR)/%.o: %.cpp
+	$(BUILD_COMPILER) $(INCLUDE) $(BUILD_CCFLAGS) -o $@ -c $<
+#
+# Clean
 clean:
-	rm -rf Release/*.o
-	rm -rf Release/*.so
+	$(CLEAN_CMD)

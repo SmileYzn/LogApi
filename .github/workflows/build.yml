@@ -1,3 +1,17 @@
+#
+# https://github.com/actions/checkout/issues/1590#issuecomment-2567109195
+#
+# We manually start a container and execute scripts in it instead of using `jobs.build.container`,
+# otherwise we couldn't use GitHub-provided actions (checkout, cache, etc.) as they rely on Node20
+# which would not necessarily be available on some containers (e.g., Ubuntu 18.04).
+#
+# See: https://github.com/actions/checkout/issues/1590
+#
+# If you need to pass environment variables from the GitHub host runner to the Docker container,
+# you can do so by adding `-e MY_VAR` to the docker run command, for example:
+#
+#    docker run --name build-container -d -e GITHUB_REPOSITORY -v ...
+#
 name: Action Build System
 on: [push]
 env:
@@ -7,8 +21,8 @@ jobs:
   linux:
     name: Linux Build
     runs-on: ubuntu-latest
-
     steps:
+
     - uses: actions/checkout@v4
 
     - name: Start Docker Container
@@ -57,41 +71,40 @@ jobs:
       with:
         name: linux32
         path: ${{github.workspace}}/cstrike
-
+        
   windows:
     name: Windows Build
     runs-on: windows-latest
-      
-    env:
-      SOLUTION_FILE_PATH: .
-      BUILD_CONFIGURATION: Release
-      BUILD_PROJECT: LogApi
   
     steps:
-    - name: Setup Checkout
-      uses: actions/checkout@v4
+    - uses: actions/checkout@v4
 
     - name: Add MSBuild to PATH
       uses: microsoft/setup-msbuild@v2
 
-    - name: Run Build
-      working-directory: ${{github.workspace}}
-      run: msbuild /m /p:Configuration=${{env.BUILD_CONFIGURATION}} ${{env.SOLUTION_FILE_PATH}}
-
-    - name: Move release file to publish
+    - name: Execute Build
       working-directory: ${{github.workspace}}
       run: |
-        # Make publish directory
-        mkdir publish\addons\logapi\dlls
+        # Open directory
+        cd LogApi
 
-        # Move cstrike files to publish
-        copy ${{env.SOLUTION_FILE_PATH}}\cstrike\* publish -Recurse -Force
+        # Make Release directory
+        mkdir -p Release
+
+        # Execute Build
+        msbuild LogApi.vcxproj -property:configuration=Release -nologo -verbosity:quiet -m
+
+        # Make publish directory
+        mkdir -p ..\cstrike\addons\logapi\dlls
+
+        # Copy cstrike files to publish
+        copy ..\cstrike\* publish -Recurse -Force
 
         # Move released dll to publish
-        copy ${{env.BUILD_CONFIGURATION}}\*.dll publish\addons\logapi\dlls -Recurse -Force
+        copy Release\*.dll ..\cstrike\addons\logapi\dlls -Recurse -Force
 
     - name: Deploy artifacts
       uses: actions/upload-artifact@v4
       with:
         name: win32
-        path: publish/*
+        path: ${{github.workspace}}/cstrike

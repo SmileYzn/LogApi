@@ -2,31 +2,6 @@
 
 CLogUtil gLogUtil;
 
-cvar_t* CLogUtil::CvarRegister(const char* Name, const char* Value)
-{
-	cvar_t* Pointer = g_engfuncs.pfnCVarGetPointer(Name);
-
-	if (!Pointer)
-	{
-		this->m_Cvar[Name].name = Name;
-
-		this->m_Cvar[Name].string = (char*)(Value);
-
-		this->m_Cvar[Name].flags = (FCVAR_SERVER | FCVAR_PROTECTED | FCVAR_SPONLY | FCVAR_UNLOGGED);
-
-		g_engfuncs.pfnCVarRegister(&this->m_Cvar[Name]);
-
-		Pointer = g_engfuncs.pfnCVarGetPointer(this->m_Cvar[Name].name);
-
-		if (Pointer)
-		{
-			g_engfuncs.pfnCvar_DirectSet(Pointer, Value);
-		}
-	}
-
-	return Pointer;
-}
-
 void CLogUtil::ServerExecute(std::string Command)
 {
 	if (!Command.empty())

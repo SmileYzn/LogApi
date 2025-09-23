@@ -52,13 +52,6 @@ public:
 	nlohmann::ordered_json GetServerInfo();
 
 private:
-	// Console variables
-	cvar_t* m_log_api_on;
-	cvar_t* m_log_api_address;
-	cvar_t* m_log_api_timeout;
-	cvar_t* m_log_api_bearer;
-	cvar_t* m_log_api_delay;
-
 	// Events
 	std::map<std::string, int> m_Events;
 
