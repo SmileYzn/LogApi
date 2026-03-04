@@ -169,14 +169,14 @@ class LogAPI
     /**
      * On Client Put In Server
      * 
-     * @param string $Event             Event Name
-     * @param array $Server		Server information data
-     * @param array $Player		Player information data
+     * @param array $request            Full request data with keys: Event, Server, Player
      * 
      * @return mixed                    Array containing LogAPI commands or null
      */
-    protected function ClientPutInServer($Event, $Server, $Player)
+    protected function ClientPutInServer($request)
     {
+        $Player = $request['Player'];
+
         // Print Chat
         $result["PrintChat"] =
         [

@@ -10,27 +10,41 @@ class LogAPI
     private $logApiToken = "YOUR_API_TOKEN_CVAR";
 
     /**
+     * The allowed events whitelist
+     * 
+     * @var array
+     */
+    private $allowedEvents = [
+        'ServerActivate',
+        'ServerDeactivate',
+        'ServerAlertMessage',
+        'ServerInfo',
+        'ClientConnect',
+        'ClientPutInServer',
+        'ClientDisconnect',
+        'ClientKill',
+        'ClientUserInfoChanged',
+        'ClientCommand',
+        'ClientSay',
+        'ClientMenuHandle'
+    ];
+
+    /**
      * On Receive Event
      */
     public function OnEvent()
     {
-        // Compare HTTP_AUTHORIZATION with Bearer Token of log_api_bearer
-        if (trim(str_replace('Bearer', '', $_SERVER['HTTP_AUTHORIZATION'])) == $this->logApiToken)
-        {
+        // Compare HTTP_AUTHORIZATION with Bearer Token of log_api_bearer using constant-time comparison
+        if (hash_equals($this->logApiToken, trim(str_replace('Bearer', '', $_SERVER['HTTP_AUTHORIZATION'] ?? '')))) {
             // Parse request as json event
             $request = json_decode(file_get_contents('php://input'), true);
-            
-            // If event is not empty
-            if (!empty($request['Event']))
-            {
-                // If method exists
-                if (method_exists($this, $request['Event']))
-                {
-                    // Process paramemeters as array
-                    $parameters = array_values($request);
 
-                    // Return from function call
-                    $result = $this->{$request['Event']}(...$parameters);
+            // If event is not empty
+            if (!empty($request['Event'])) {
+                // If event is allowed in whitelist and method exists
+                if (in_array($request['Event'], $this->allowedEvents, true) && method_exists($this, $request['Event'])) {
+                    // Return from function call (pass request array directly)
+                    $result = $this->{$request['Event']}($request);
 
                     // Set PHP to return content type as json
                     header('Content-Type: application/json');
@@ -39,9 +53,7 @@ class LogAPI
                     die(json_encode($result));
                 }
             }
-        }
-        else
-        {
+        } else {
             header("HTTP/1.1 401 Unauthorized");
         }
     }
@@ -50,42 +62,35 @@ class LogAPI
      * On Server Activate Event
      * 
      * 
-     * @param string $Event         Event Name
-     * @param array $Server		    Server information data
-     * @param string $EdictCount    Entity Count in Server (Number of edict)
-     * @param string $ClientMax     Number of maximum allowed clients in server
+     * @param array $request    Full request data with keys: Event, Server, EdictCount, ClientMax
      * 
      * @return mixed                Array containing LogAPI commands to server or null
      */
-    protected function ServerActivate($Event, $Server, $EdictCount, $ClientMax)
+    protected function ServerActivate($request)
     {
         return null;
     }
-    
+
     /**
      * On Server Deactivate Event
      * 
-     * @param string $Event     Event Name
-     * @param array $Server     Server information data
+     * @param array $request    Full request data with keys: Event, Server
      * 
      * @return mixed            Array containing LogAPI commands to server or null
      */
-    protected function ServerDeactivate($Event, $Server)
+    protected function ServerDeactivate($request)
     {
         return null;
     }
-    
+
     /**
      * On Server Alert Message
      * 
-     * @param string $Event     Event Name
-     * @param array $Server		Server information data
-     * @param string $Type      Alert Mesasge Type (Always 5 at_logged)
-     * @param string $Message   Log string
+     * @param array $request    Full request data with keys: Event, Server, Type, Message
      * 
      * @return mixed            Array containing LogAPI commands to server or null
      */
-    protected function ServerAlertMessage($Event, $Server, $Type, $Message)
+    protected function ServerAlertMessage($request)
     {
         return null;
     }
@@ -93,115 +98,95 @@ class LogAPI
     /**
      * On Server Update Information
      * 
-     * @param string $Event     Event Name
-     * @param array $Server		Server information data
+     * @param array $request    Full request data with keys: Event, Server
      *
      * @return mixed            Array containing LogAPI commands to server or null
      */
-    protected function ServerInfo($Event, $Server)
+    protected function ServerInfo($request)
     {
         return null;
     }
-    
+
     /**
      * On Client Connect
      * 
-     * @param string $Event     Event Name
-     * @param array $Server		Server information data
-     * @param array $Player		Player information data
+     * @param array $request    Full request data with keys: Event, Server, Player
      * 
      * @return mixed            Array containing LogAPI commands to server or null
      */
-    protected function ClientConnect($Event, $Server, $Player)
+    protected function ClientConnect($request)
     {
         return null;
     }
-    
+
     /**
      * On Client Put In Server
      * 
-     * @param string $Event     Event Name
-     * @param array $Server		Server information data
-     * @param array $Player		Player information data
+     * @param array $request    Full request data with keys: Event, Server, Player
      * 
      * @return mixed            Array containing LogAPI commands or null
      */
-    protected function ClientPutInServer($Event, $Server, $Player)
+    protected function ClientPutInServer($request)
     {
         return null;
     }
-    
+
     /**
      * On Client Disconnect
      * 
-     * @param string $Event     Event Name
-     * @param array $Server		Server information data
-     * @param array $Player		Player information data
+     * @param array $request    Full request data with keys: Event, Server, Player, Crash, Reason
      * 
      * @return mixed            Array containing LogAPI commands to server or null
      */
-    protected function ClientDisconnect($Event, $Server, $Player)
+    protected function ClientDisconnect($request)
     {
         return null;
     }
-    
+
     /**
      * On Client Killed
      * 
-     * @param string $Event     Event Name
-     * @param array $Server		Server information data
-     * @param array $Player		Player information data
+     * @param array $request    Full request data with keys: Event, Server, Player
      * 
      * @return mixed            Array containing LogAPI commands or null
      */
-    protected function ClientKill($Event, $Server, $Player)
+    protected function ClientKill($request)
     {
         return null;
     }
-    
+
     /**
      * On Client Information Changed
      * 
-     * @param string $Event         Event Name
-     * @param array $Server		    Server information data
-     * @param array $Player		    Player information data
-     * @param string $InfoBuffer    KeyInfoBuffer
+     * @param array $request    Full request data with keys: Event, Server, Player, InfoBuffer
      * 
      * @return mixed                Array containing LogAPI commands to server or null
      */
-    protected function ClientUserInfoChanged($Event, $Server, $Player, $InfoBuffer)
+    protected function ClientUserInfoChanged($request)
     {
         return null;
     }
-    
+
     /**
      * On Client Command
      * 
-     * @param string $Event     Event Name
-     * @param array $Server		Server information data
-     * @param array $Player		Player information data
-     * @param string $Command   Command
-     * @param string $Args      Command Arguments
+     * @param array $request    Full request data with keys: Event, Server, Player, Command, Args
      * 
      * @return mixed            Array containing LogAPI commands to server or null
      */
-    protected function ClientCommand($Event, $Server, $Player, $Command, $Args)
+    protected function ClientCommand($request)
     {
         return null;
     }
-    
+
     /**
      * On Client say or say_team commands
      * 
-     * @param string $Event     Event Name
-     * @param array $Server		Server information data
-     * @param array $Player		Player information data
-     * @param string $Type      Type (say or say_team)
-     * @param string $Message   Message sent
+     * @param array $request    Full request data with keys: Event, Server, Player, Type, Message
      * 
      * @return mixed             Array containing LogAPI commands to server or null
      */
-    protected function ClientSay($Event, $Server, $Player, $Type, $Message)
+    protected function ClientSay($request)
     {
         return null;
     }
@@ -209,17 +194,11 @@ class LogAPI
     /**
      * On Client menu handle command
      * 
-     * @param string $Event     Event Name (Menu callback name)
-     * @param array $Server     Server information data
-     * @param array $Player     Player information data
-     * @param string $Info      Info string passed to menu item option
-     * @param string $Text      Text of option string passed to menu item
-     * @param boolean $Disabled This option is disabled or not
-     * @param string $Extra     Extra information string passed to menu item option
+     * @param array $request    Full request data with keys: Event, Server, Player, Item (Info, Text, Disabled, Extra)
      *
      * @return mixed            Array containing LogAPI commands to server or null
      */
-    protected function ClientMenuHandle($Event, $Server, $Player, $Info, $Text, $Disabled, $Extra)
+    protected function ClientMenuHandle($request)
     {
         return null;
     }
