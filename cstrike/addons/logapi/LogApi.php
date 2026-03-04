@@ -6,7 +6,7 @@ class LogAPI
      * YOUR_API_TOKEN_CVAR must be exactly the same as configured
      * in the "log_api_bearer" cvar in the server's logapi.cfg
      */
-    private $logApiToken = "testandobearer";
+    private $logApiToken = "YOUR_API_TOKEN_CVAR";
 
     /**
      * Internal Whitelist for Security (PREVENTS RCE).

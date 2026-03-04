@@ -214,7 +214,7 @@ class LogAPI
         $PlayerName = $request['Player']['Name'];
         $EntityId   = $request['Player']['EntityId'];
 
-        // Convert the full array to JSON String just to print it to the console
+        // Convert the full array to JSON String to print it to the console
         $debugString = json_encode($request);
 
         // Print debug to HLDS Server Console
@@ -226,9 +226,67 @@ class LogAPI
 
         return $retorno;
     }
-    
+
     /**
-     * Example 2: Intercepting Chat messages (.menu) and displaying a Menu to the player
+     * Example 2: ClientPutInServer - Sending a Chat Message and executing a server command
+     */
+    protected function ClientPutInServer($request)
+    {
+        $PlayerName = $request['Player']['Name'];
+
+        $result["PrintChat"] =
+        [
+            'EntityId' => 0, // Entity Index 0 sends the message to ALL players
+            'Message' => "^4[LogAPI]^1 {$PlayerName} entered the game. Restarting match in ^35^1 seconds..."
+        ];
+
+        // Execute server command in HLDS
+        $result['ServerCommand'] = "sv_restart 5";
+
+        return $result;
+    }
+
+    /**
+     * Example 3: ClientDisconnect - Broadcast a message when someone leaves
+     */
+    protected function ClientDisconnect($request)
+    {
+        $PlayerName = $request['Player']['Name'];
+
+        $result["PrintChat"] =
+        [
+            'EntityId' => 0,
+            'Message'  => "^4[LogAPI]^1 Player ^3{$PlayerName}^1 disconnected from the server."
+        ];
+
+        return $result;
+    }
+
+    /**
+     * Example 4: ClientKill - Show a center screen message when a player gets a headshot
+     */
+    protected function ClientKill($request)
+    {
+        // $request['Player'] is the victim, $request['Attacker'] (if any) is the killer
+        $VictimName   = $request['Player']['Name'];
+        $AttackerName = $request['Attacker']['Name'];
+        $Weapon       = $request['Weapon'];
+        $Headshot     = $request['Headshot'];
+
+        // If it was a headshot, print a center message to everyone!
+        if ($Headshot) {
+            $result["ClientPrint"] = [
+                'EntityId'  => 0, // 0 = All players
+                'PrintType' => 4, // 4 = print_center
+                'Message'   => "Boom! {$AttackerName} headshotted {$VictimName} with {$Weapon}!"
+            ];
+            return $result;
+        }
+        return null;
+    }
+
+    /**
+     * Example 5: Intercepting Chat messages (.menu) and displaying a Menu to the player
      */
     protected function ClientSay($request)
     {
@@ -278,7 +336,7 @@ class LogAPI
     }
 
     /**
-     * Example 3: Handling the Callback of the Custom Menu and Kicking a player
+     * Example 6: Handling the Callback of the Custom Menu and Kicking a player
      */
     protected function PlayerMenuHandle($request)
     {
