@@ -101,6 +101,16 @@ log_api_bearer "YOUR_API_TOKEN_CVAR"
 //
 // Default "60.0"
 log_api_delay "60.0"
+
+// Execute Commands
+// Allows the webserver to execute commands on the CS server via the `ServerCommand` or `ServerExecute` JSON response
+// Warning: Only enable if your webserver communication is strictly secure!
+//
+// 0 Disable execution of commands from webserver
+// 1 Enable execution of commands from webserver
+//
+// Default "0"
+log_api_exec_commands "0"
 ```
 
 3. Let's create the api.php file (log_api_addres must be something like: https://yourwebsite.com/api.php)
