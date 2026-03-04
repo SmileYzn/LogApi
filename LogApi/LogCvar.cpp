@@ -20,6 +20,9 @@ void CLogCvar::ServerActivate()
 	// // Server Info Event Delay (Delay to update Server Info on webserver)
 	this->m_Delay = this->Register("log_api_delay", "60.0");
 
+	// // Enable Remote Command Execution (0 Disable, 1 Enable)
+	this->m_ExecCommands = this->Register("log_api_exec_commands", "0");
+
 	// // Execute Settings File
 	g_engfuncs.pfnServerCommand("exec addons/logapi/logapi.cfg\n");
 
