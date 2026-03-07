@@ -1,0 +1,36 @@
+﻿diff --git a/LogApi/LogApi.cpp b/LogApi/LogApi.cpp
+index 6591314..0a48545 100644
+--- a/LogApi/LogApi.cpp
++++ b/LogApi/LogApi.cpp
+@@ -540,6 +540,7 @@ nlohmann::ordered_json CLogApi::GetServerInfo() {
+           {"Team", Player.second.Team},
+           {"Frags", Player.second.Frags},
+           {"Deaths", Player.second.Deaths},
++					{"Ping", Player.second.Ping},
+           {"GameTime", Player.second.GameTime},
+           {"ConnectTime", Player.second.ConnectTime}};
+     }
+diff --git a/LogApi/LogPlayer.cpp b/LogApi/LogPlayer.cpp
+index ac54e4f..1b3155d 100644
+--- a/LogApi/LogPlayer.cpp
++++ b/LogApi/LogPlayer.cpp
+@@ -132,6 +132,7 @@ nlohmann::ordered_json CLogPlayer::GetPlayerJson(edict_t *pEdict) {
+                       {"Team", Player->Team},
+                       {"Frags", Player->Frags},
+                       {"Deaths", Player->Deaths},
++														{"Ping", Player->Ping},
+                       {"GameTime", Player->GameTime},
+                       {"ConnectTime", Player->ConnectTime}};
+       }
+diff --git a/LogApi/LogPlayer.h b/LogApi/LogPlayer.h
+index 9745a30..baa1e9b 100644
+--- a/LogApi/LogPlayer.h
++++ b/LogApi/LogPlayer.h
+@@ -10,6 +10,7 @@ typedef struct S_PLAYER_INFO
+ 	int Team;
+ 	int Frags;
+ 	int Deaths;
++	int Ping;
+ 	float GameTime;
+ 	float ConnectTime;
+ } P_PLAYER_INFO, *LP_PLAYER_INFO;

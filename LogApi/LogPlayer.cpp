@@ -32,6 +32,8 @@ void CLogPlayer::Connect(edict_t *pEdict, const char *pszName,
 
       this->m_Players[Auth].Deaths = 0;
 
+      this->m_Players[Auth].Ping = 0;
+
       this->m_Players[Auth].GameTime = 0.0f;
 
       this->m_Players[Auth].ConnectTime = gpGlobals->time;
@@ -80,6 +82,10 @@ void CLogPlayer::Update(edict_t *pEdict) {
         this->m_Players[Auth].Frags = pEdict->v.frags;
 
         this->m_Players[Auth].Deaths = Player->m_iDeaths;
+
+        int ping = 0, loss = 0;
+        g_engfuncs.pfnGetPlayerStats(pEdict, &ping, &loss);
+        this->m_Players[Auth].Ping = ping;
 
         if (this->m_Players[Auth].GameTime <= 0.0f) {
           if (Player->m_iTeam == UNASSIGNED) {
@@ -132,6 +138,7 @@ nlohmann::ordered_json CLogPlayer::GetPlayerJson(edict_t *pEdict) {
                       {"Team", Player->Team},
                       {"Frags", Player->Frags},
                       {"Deaths", Player->Deaths},
+                      {"Ping", Player->Ping},
                       {"GameTime", Player->GameTime},
                       {"ConnectTime", Player->ConnectTime}};
       }
