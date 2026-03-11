@@ -1,0 +1,101 @@
+﻿diff --git a/LogApi/LogApi.cpp b/LogApi/LogApi.cpp
+index 6591314..c8b212f 100644
+--- a/LogApi/LogApi.cpp
++++ b/LogApi/LogApi.cpp
+@@ -540,6 +540,7 @@ nlohmann::ordered_json CLogApi::GetServerInfo() {
+           {"Team", Player.second.Team},
+           {"Frags", Player.second.Frags},
+           {"Deaths", Player.second.Deaths},
++          {"Ping", Player.second.Ping},
+           {"GameTime", Player.second.GameTime},
+           {"ConnectTime", Player.second.ConnectTime}};
+     }
+diff --git a/LogApi/LogPlayer.cpp b/LogApi/LogPlayer.cpp
+index ac54e4f..97c86c6 100644
+--- a/LogApi/LogPlayer.cpp
++++ b/LogApi/LogPlayer.cpp
+@@ -32,6 +32,8 @@ void CLogPlayer::Connect(edict_t *pEdict, const char *pszName,
+ 
+       this->m_Players[Auth].Deaths = 0;
+ 
++      this->m_Players[Auth].Ping = 0;
++
+       this->m_Players[Auth].GameTime = 0.0f;
+ 
+       this->m_Players[Auth].ConnectTime = gpGlobals->time;
+@@ -81,6 +83,10 @@ void CLogPlayer::Update(edict_t *pEdict) {
+ 
+         this->m_Players[Auth].Deaths = Player->m_iDeaths;
+ 
++        int ping = 0, loss = 0;
++        g_engfuncs.pfnGetPlayerStats(pEdict, &ping, &loss);
++        this->m_Players[Auth].Ping = ping;
++
+         if (this->m_Players[Auth].GameTime <= 0.0f) {
+           if (Player->m_iTeam == UNASSIGNED) {
+             if (!Player->IsBot()) {
+@@ -132,6 +138,7 @@ nlohmann::ordered_json CLogPlayer::GetPlayerJson(edict_t *pEdict) {
+                       {"Team", Player->Team},
+                       {"Frags", Player->Frags},
+                       {"Deaths", Player->Deaths},
++                      {"Ping", Player->Ping},
+                       {"GameTime", Player->GameTime},
+                       {"ConnectTime", Player->ConnectTime}};
+       }
+diff --git a/LogApi/LogPlayer.h b/LogApi/LogPlayer.h
+index 9745a30..01b685b 100644
+--- a/LogApi/LogPlayer.h
++++ b/LogApi/LogPlayer.h
+@@ -1,31 +1,30 @@
+ #pragma once
+ 
+-typedef struct S_PLAYER_INFO
+-{
+-	std::string Auth;
+-	std::string Name;
+-	std::string Address;
+-	int EntityId;
+-	int UserId;
+-	int Team;
+-	int Frags;
+-	int Deaths;
+-	float GameTime;
+-	float ConnectTime;
++typedef struct S_PLAYER_INFO {
++  std::string Auth;
++  std::string Name;
++  std::string Address;
++  int EntityId;
++  int UserId;
++  int Team;
++  int Frags;
++  int Deaths;
++  int Ping;
++  float GameTime;
++  float ConnectTime;
+ } P_PLAYER_INFO, *LP_PLAYER_INFO;
+ 
+-class CLogPlayer
+-{
++class CLogPlayer {
+ public:
+-	void Connect(edict_t* pEdict, const char* pszName, const char* pszAddress);
+-	void Disconnect(edict_t* pEdict);
+-	void Update(edict_t* pEdict);
+-	std::map<std::string, P_PLAYER_INFO> GetPlayers();
+-	LP_PLAYER_INFO GetPlayer(std::string Auth);
+-	nlohmann::ordered_json GetPlayerJson(edict_t* pEdict);
++  void Connect(edict_t *pEdict, const char *pszName, const char *pszAddress);
++  void Disconnect(edict_t *pEdict);
++  void Update(edict_t *pEdict);
++  std::map<std::string, P_PLAYER_INFO> GetPlayers();
++  LP_PLAYER_INFO GetPlayer(std::string Auth);
++  nlohmann::ordered_json GetPlayerJson(edict_t *pEdict);
+ 
+ private:
+-	std::map<std::string, P_PLAYER_INFO> m_Players;
++  std::map<std::string, P_PLAYER_INFO> m_Players;
+ };
+ 
+ extern CLogPlayer gLogPlayer;
+\ No newline at end of file

@@ -540,6 +540,7 @@ nlohmann::ordered_json CLogApi::GetServerInfo() {
           {"Team", Player.second.Team},
           {"Frags", Player.second.Frags},
           {"Deaths", Player.second.Deaths},
+          {"Ping", Player.second.Ping},
           {"GameTime", Player.second.GameTime},
           {"ConnectTime", Player.second.ConnectTime}};
     }
