@@ -40,10 +40,7 @@ jobs:
           apt-get update > /dev/null
 
           # Install build dependencies
-          apt-get install -qq -y pkg-config wget unzip build-essential gcc-4.8-multilib g++-4.8-multilib libgcc1:i386 libcurl4-openssl-dev:i386 zlib1g-dev:i386 libssl-dev:i386 libkrb5-dev:i386 > /dev/null
-
-          # Update alternatives
-          update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-4.8 100 --slave /usr/bin/g++ g++ /usr/bin/g++-4.8
+          apt-get install -qq -y pkg-config wget unzip build-essential gcc-multilib g++-multilib libgcc1:i386 libcurl4-openssl-dev:i386 zlib1g-dev:i386 libssl-dev:i386 > /dev/null
       run: docker exec build-container bash -c "$SCRIPT"
 
     - name: Execute Build

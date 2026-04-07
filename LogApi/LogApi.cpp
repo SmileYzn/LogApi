@@ -394,7 +394,7 @@ void CLogApi::ClientPrint(int EventIndex, nlohmann::ordered_json Data) {
           if (EntityId > 0) {
             // Get entity pointer
             pEntity =
-                FNullEnt(INDEXENT(EntityId)) ? INDEXENT(EntityId) : nullptr;
+                !FNullEnt(INDEXENT(EntityId)) ? INDEXENT(EntityId) : nullptr;
           }
 
           // If is not empty
@@ -432,7 +432,7 @@ void CLogApi::PrintChat(int EventIndex, nlohmann::ordered_json Data) {
           if (EntityId > 0) {
             // Get entity pointer
             pEntity =
-                FNullEnt(INDEXENT(EntityId)) ? INDEXENT(EntityId) : nullptr;
+                !FNullEnt(INDEXENT(EntityId)) ? INDEXENT(EntityId) : nullptr;
           }
 
           // If is not empty
@@ -474,7 +474,7 @@ void CLogApi::ShowHudMessage(int EventIndex, nlohmann::ordered_json Data) {
           if (EntityId > 0) {
             // Get entity pointer
             pEntity =
-                FNullEnt(INDEXENT(EntityId)) ? INDEXENT(EntityId) : nullptr;
+                !FNullEnt(INDEXENT(EntityId)) ? INDEXENT(EntityId) : nullptr;
           }
 
           // If is not empty

@@ -25,9 +25,6 @@ void CLogCvar::ServerActivate()
 
 	// // Execute Settings File
 	g_engfuncs.pfnServerCommand("exec addons/logapi/logapi.cfg\n");
-
-    // // Force execution on this server frame
-    g_engfuncs.pfnServerExecute();
 }
 
 // Register Cvar
