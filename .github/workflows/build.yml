@@ -66,38 +66,36 @@ jobs:
 
     - name: Prepare Linux Artifact
       run: |
-        # Create artifact structure
+        # Create artifact structure (config files in root of addons/logapi/)
         mkdir -p ${{github.workspace}}/artifacts/addons/logapi/dlls
-        mkdir -p ${{github.workspace}}/artifacts/addons/logapi/config
-        mkdir -p ${{github.workspace}}/artifacts/addons/logapi/php
         
         # Copy compiled module from Docker
         docker cp build-container:/src/LogApi/Release/logapi_mm.so ${{github.workspace}}/artifacts/addons/logapi/dlls/
-        echo "✓ logapi_mm.so copied"
+        echo "✓ logapi_mm.so copied to addons/logapi/dlls/"
         
-        # Copy config files from LogApi/ folder
+        # Copy config files to root of addons/logapi/ (NOT in subfolders)
         if [ -f "${{github.workspace}}/LogApi/events.json" ]; then
-          cp ${{github.workspace}}/LogApi/events.json ${{github.workspace}}/artifacts/addons/logapi/config/
-          echo "✓ events.json copied"
+          cp ${{github.workspace}}/LogApi/events.json ${{github.workspace}}/artifacts/addons/logapi/
+          echo "✓ events.json copied to addons/logapi/"
         else
-          echo "⚠ events.json NOT FOUND in LogApi/"
-          echo '{"events":[]}' > ${{github.workspace}}/artifacts/addons/logapi/config/events.json
+          echo "⚠ events.json NOT FOUND - creating placeholder"
+          echo '{"events":[]}' > ${{github.workspace}}/artifacts/addons/logapi/events.json
         fi
         
         if [ -f "${{github.workspace}}/LogApi/logapi.cfg" ]; then
-          cp ${{github.workspace}}/LogApi/logapi.cfg ${{github.workspace}}/artifacts/addons/logapi/config/
-          echo "✓ logapi.cfg copied"
+          cp ${{github.workspace}}/LogApi/logapi.cfg ${{github.workspace}}/artifacts/addons/logapi/
+          echo "✓ logapi.cfg copied to addons/logapi/"
         else
-          echo "⚠ logapi.cfg NOT FOUND in LogApi/"
-          echo '// LogApi Config' > ${{github.workspace}}/artifacts/addons/logapi/config/logapi.cfg
+          echo "⚠ logapi.cfg NOT FOUND - creating placeholder"
+          echo '// LogApi Config' > ${{github.workspace}}/artifacts/addons/logapi/logapi.cfg
         fi
         
         if [ -f "${{github.workspace}}/LogApi/LogApi.php" ]; then
-          cp ${{github.workspace}}/LogApi/LogApi.php ${{github.workspace}}/artifacts/addons/logapi/php/
-          echo "✓ LogApi.php copied"
+          cp ${{github.workspace}}/LogApi/LogApi.php ${{github.workspace}}/artifacts/addons/logapi/
+          echo "✓ LogApi.php copied to addons/logapi/"
         else
-          echo "⚠ LogApi.php NOT FOUND in LogApi/"
-          echo '<?php // LogApi PHP Handler ?>' > ${{github.workspace}}/artifacts/addons/logapi/php/LogApi.php
+          echo "⚠ LogApi.php NOT FOUND - creating placeholder"
+          echo '<?php // LogApi PHP Handler ?>' > ${{github.workspace}}/artifacts/addons/logapi/LogApi.php
         fi
         
         # Show final artifact contents
@@ -161,19 +159,17 @@ jobs:
 
     - name: Prepare Windows Artifact
       run: |
-        # Create artifact structure
+        # Create artifact structure (config files in root of addons/logapi/)
         New-Item -ItemType Directory -Force -Path artifacts\addons\logapi\dlls | Out-Null
-        New-Item -ItemType Directory -Force -Path artifacts\addons\logapi\config | Out-Null
-        New-Item -ItemType Directory -Force -Path artifacts\addons\logapi\php | Out-Null
         
         # Copy compiled module
         Copy-Item "${{ steps.build.outputs.dll_path }}" artifacts\addons\logapi\dlls\logapi_mm.dll -Force
-        Write-Host "✓ logapi_mm.dll copied"
+        Write-Host "✓ logapi_mm.dll copied to addons/logapi/dlls/"
         
-        # Copy config files from LogApi/ folder
+        # Copy config files to root of addons/logapi/ (NOT in subfolders)
         if (Test-Path "LogApi/events.json") {
           Copy-Item "LogApi/events.json" artifacts\addons\logapi\events.json -Force
-          Write-Host "✓ events.json copied"
+          Write-Host "✓ events.json copied to addons/logapi/"
         } else {
           Write-Host "⚠ events.json NOT FOUND - creating placeholder"
           '{"events":[]}' | Out-File -FilePath artifacts\addons\logapi\events.json -Encoding UTF8
@@ -181,18 +177,18 @@ jobs:
 
         if (Test-Path "LogApi/logapi.cfg") {
           Copy-Item "LogApi/logapi.cfg" artifacts\addons\logapi\logapi.cfg -Force
-          Write-Host "✓ logapi.cfg copied"
+          Write-Host "✓ logapi.cfg copied to addons/logapi/"
         } else {
           Write-Host "⚠ logapi.cfg NOT FOUND - creating placeholder"
-          '// LogApi Config' | Out-File -FilePath artifacts\addons\logapi\config\logapi.cfg -Encoding UTF8
+          '// LogApi Config' | Out-File -FilePath artifacts\addons\logapi\logapi.cfg -Encoding UTF8
         }
 
         if (Test-Path "LogApi/LogApi.php") {
-          Copy-Item "LogApi/LogApi.php" artifacts\addons\logapi\php\LogApi.php -Force
-          Write-Host "✓ LogApi.php copied"
+          Copy-Item "LogApi/LogApi.php" artifacts\addons\logapi\LogApi.php -Force
+          Write-Host "✓ LogApi.php copied to addons/logapi/"
         } else {
           Write-Host "⚠ LogApi.php NOT FOUND - creating placeholder"
-          '<?php // LogApi PHP Handler ?>' | Out-File -FilePath artifacts\addons\logapi\php\LogApi.php -Encoding UTF8
+          '<?php // LogApi PHP Handler ?>' | Out-File -FilePath artifacts\addons\logapi\LogApi.php -Encoding UTF8
         }
         
         # Show artifact contents
