@@ -26,9 +26,9 @@ void CLogCurl::ServerFrame() {
     while (ProcessedThisFrame < 5 && (MsgInfo = curl_multi_info_read(
                                           this->m_MultiHandle, &HandleCount))) {
       if (MsgInfo->msg == CURLMSG_DONE) {
-        int Index = 0;
-
-        curl_easy_getinfo(MsgInfo->easy_handle, CURLINFO_PRIVATE, &Index);
+        char *pPrivate = nullptr;
+        curl_easy_getinfo(MsgInfo->easy_handle, CURLINFO_PRIVATE, &pPrivate);
+        long Index = (long)(intptr_t)pPrivate;
 
         if (this->m_Data.find(Index) != this->m_Data.end()) {
           gLogApi.CallbackResult(MsgInfo->easy_handle, this->m_Data[Index].Size,
@@ -102,15 +102,15 @@ void CLogCurl::PostJSON(const char *url, long Timeout, std::string BearerToken,
         curl_easy_setopt(ch, CURLOPT_WRITEDATA,
                          (void *)&this->m_Data[this->m_RequestIndex]);
 
-        curl_easy_setopt(ch, CURLOPT_PRIVATE, this->m_RequestIndex);
+        curl_easy_setopt(ch, CURLOPT_PRIVATE, (void*)(intptr_t)this->m_RequestIndex);
 
         curl_multi_add_handle(this->m_MultiHandle, ch);
 
-        this->m_RequestIndex++;
-
-        if (this->m_RequestIndex < 0) {
+        if (this->m_RequestIndex >= LONG_MAX) {
           this->m_RequestIndex = 1;
         }
+
+        this->m_RequestIndex++;
       }
     }
   }
