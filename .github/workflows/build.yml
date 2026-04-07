@@ -1,16 +1,5 @@
 #
-# https://github.com/actions/checkout/issues/1590#issuecomment-2567109195
-#
-# We manually start a container and execute scripts in it instead of using `jobs.build.container`,
-# otherwise we couldn't use GitHub-provided actions (checkout, cache, etc.) as they rely on Node20
-# which would not necessarily be available on some containers (e.g., Ubuntu 18.04).
-#
-# See: https://github.com/actions/checkout/issues/1590
-#
-# If you need to pass environment variables from the GitHub host runner to the Docker container,
-# you can do so by adding `-e MY_VAR` to the docker run command, for example:
-#
-#    docker run --name build-container -d -e GITHUB_REPOSITORY -v ...
+# GitHub Actions Build System - LogApi
 #
 name: Action Build System
 on: [push]
@@ -25,86 +14,192 @@ jobs:
 
     - uses: actions/checkout@v4
 
+    - name: Check Repository Structure
+      run: |
+        echo "=== Repository Root Contents ==="
+        ls -la ${{github.workspace}}/
+        echo "=== LogApi Folder Contents ==="
+        ls -la ${{github.workspace}}/LogApi/ 2>/dev/null || echo "LogApi folder not found"
+        echo "=== Looking for config files in LogApi/ ==="
+        ls -la ${{github.workspace}}/LogApi/events.json 2>/dev/null || echo "events.json not found"
+        ls -la ${{github.workspace}}/LogApi/logapi.cfg 2>/dev/null || echo "logapi.cfg not found"
+        ls -la ${{github.workspace}}/LogApi/LogApi.php 2>/dev/null || echo "LogApi.php not found"
+
     - name: Start Docker Container
       run: |
         docker pull $CONTAINER
-        docker run --name build-container -d -v ${{github.workspace}}:/desktop $CONTAINER tail -f /dev/null
+        docker run --name build-container -d -v ${{github.workspace}}:/src $CONTAINER tail -f /dev/null
 
     - name: Install Development Tools Packages
-      env:
-        SCRIPT: |
-          # Add i386 architecture
+      run: |
+        docker exec build-container bash -c "
           dpkg --add-architecture i386
+          apt-get update
+          apt-get install -qq -y pkg-config wget unzip build-essential gcc-multilib g++-multilib libgcc1:i386 zlib1g-dev:i386
+        "
 
-          # Update repository
-          apt-get update > /dev/null
-
-          # Install build dependencies
-          apt-get install -qq -y pkg-config wget unzip build-essential gcc-4.8-multilib g++-4.8-multilib libgcc1:i386 libcurl4-openssl-dev:i386 zlib1g-dev:i386 libssl-dev:i386 libkrb5-dev:i386 > /dev/null
-
-          # Update alternatives
-          update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-4.8 100 --slave /usr/bin/g++ g++ /usr/bin/g++-4.8
-      run: docker exec build-container bash -c "$SCRIPT"
+    - name: Build libcurl 32-bit Static
+      run: |
+        docker exec build-container bash -c "
+          cd /tmp
+          wget -q https://curl.se/download/curl-8.7.1.tar.gz
+          tar xf curl-8.7.1.tar.gz
+          cd curl-8.7.1
+          ./configure --host=i686-linux-gnu CFLAGS='-m32' LDFLAGS='-m32' --disable-gssapi --disable-kerberos5 --disable-ntlm --without-gssapi --without-ssl --disable-shared --enable-static --prefix=/usr/local/curl32
+          make -j\$(nproc)
+          make install
+        "
 
     - name: Execute Build
-      env:
-        SCRIPT: |
-          # Open makefile directory
-          cd /desktop/LogApi
-
-          # Make Release Directory
-          mkdir -p Release
-
-          # Make linux (Without post build script)
+      run: |
+        docker exec build-container bash -c "
+          cd /src/LogApi
+          echo '=== Cleaning ==='
+          make clean || true
+          echo '=== Building ==='
           make
+          echo '=== Build Result ==='
+          ls -la Release/
+          echo '=== Dependencies ==='
+          ldd Release/logapi_mm.so 2>&1 || true
+        "
 
-          # Make dlls path
-          mkdir -p ../cstrike/addons/logapi/dlls
+    - name: Prepare Linux Artifact
+      run: |
+        # Create artifact structure (config files in root of addons/logapi/)
+        mkdir -p ${{github.workspace}}/artifacts/addons/logapi/dlls
+        
+        # Copy compiled module from Docker
+        docker cp build-container:/src/LogApi/Release/logapi_mm.so ${{github.workspace}}/artifacts/addons/logapi/dlls/
+        echo "✓ logapi_mm.so copied to addons/logapi/dlls/"
+        
+        # Copy config files to root of addons/logapi/ (NOT in subfolders)
+        if [ -f "${{github.workspace}}/LogApi/events.json" ]; then
+          cp ${{github.workspace}}/LogApi/events.json ${{github.workspace}}/artifacts/addons/logapi/
+          echo "✓ events.json copied to addons/logapi/"
+        else
+          echo "⚠ events.json NOT FOUND - creating placeholder"
+          echo '{"events":[]}' > ${{github.workspace}}/artifacts/addons/logapi/events.json
+        fi
+        
+        if [ -f "${{github.workspace}}/LogApi/logapi.cfg" ]; then
+          cp ${{github.workspace}}/LogApi/logapi.cfg ${{github.workspace}}/artifacts/addons/logapi/
+          echo "✓ logapi.cfg copied to addons/logapi/"
+        else
+          echo "⚠ logapi.cfg NOT FOUND - creating placeholder"
+          echo '// LogApi Config' > ${{github.workspace}}/artifacts/addons/logapi/logapi.cfg
+        fi
+        
+        if [ -f "${{github.workspace}}/LogApi/LogApi.php" ]; then
+          cp ${{github.workspace}}/LogApi/LogApi.php ${{github.workspace}}/artifacts/addons/logapi/
+          echo "✓ LogApi.php copied to addons/logapi/"
+        else
+          echo "⚠ LogApi.php NOT FOUND - creating placeholder"
+          echo '<?php // LogApi PHP Handler ?>' > ${{github.workspace}}/artifacts/addons/logapi/LogApi.php
+        fi
+        
+        # Show final artifact contents
+        echo "=== Final Artifact Contents ==="
+        find ${{github.workspace}}/artifacts -type f
 
-          # Copy release file
-          cp ./Release/logapi_mm.so ../cstrike/addons/logapi/dlls
-
-      run: docker exec build-container bash -c "$SCRIPT"
-
-    - name: Deploy artifacts
+    - name: Upload Linux Artifact
       uses: actions/upload-artifact@v4
       with:
         name: linux32
-        path: ${{github.workspace}}/cstrike
-        
+        path: ${{github.workspace}}/artifacts
+        retention-days: 30
+        if-no-files-found: error
+
   windows:
     name: Windows Build
     runs-on: windows-latest
-  
     steps:
     - uses: actions/checkout@v4
 
     - name: Add MSBuild to PATH
       uses: microsoft/setup-msbuild@v2
 
-    - name: Execute Build
-      working-directory: ${{github.workspace}}
+    - name: Check Repository Structure
       run: |
-        # Open directory
-        cd LogApi
+        Write-Host "=== Repository Root Contents ==="
+        Get-ChildItem ${{github.workspace}} | Select-Object Name
+        Write-Host "=== LogApi Folder Contents ==="
+        Get-ChildItem ${{github.workspace}}\LogApi 2>$null | Select-Object Name
+        Write-Host "=== Looking for config files ==="
+        if (Test-Path "${{github.workspace}}\LogApi\events.json") { Write-Host "✓ events.json found" } else { Write-Host "✗ events.json not found" }
+        if (Test-Path "${{github.workspace}}\LogApi\logapi.cfg") { Write-Host "✓ logapi.cfg found" } else { Write-Host "✗ logapi.cfg not found" }
+        if (Test-Path "${{github.workspace}}\LogApi\LogApi.php") { Write-Host "✓ LogApi.php found" } else { Write-Host "✗ LogApi.php not found" }
+      shell: pwsh
 
-        # Make Release directory
-        mkdir -p Release
+    - name: Find and Build Project
+      id: build
+      run: |
+        $project = Get-ChildItem -Recurse -Filter "*.vcxproj" | Select-Object -First 1
+        if (!$project) {
+          Write-Error "No .vcxproj found!"
+          exit 1
+        }
+        Write-Host "Found project: $($project.FullName)"
+        
+        msbuild $project.FullName -property:Configuration=Release -property:Platform=Win32 -nologo -verbosity:minimal
+        if ($LASTEXITCODE -ne 0) {
+          Write-Error "Build failed!"
+          exit 1
+        }
+        
+        $dll = Get-ChildItem -Recurse -Filter "logapi_mm.dll" | Select-Object -First 1
+        if (!$dll) {
+          Write-Error "logapi_mm.dll not found!"
+          exit 1
+        }
+        Write-Host "Found DLL: $($dll.FullName)"
+        
+        echo "dll_path=$($dll.FullName)" >> $env:GITHUB_OUTPUT
+      shell: pwsh
 
-        # Execute Build
-        msbuild LogApi.vcxproj -property:configuration=Release -nologo -verbosity:quiet -m
+    - name: Prepare Windows Artifact
+      run: |
+        # Create artifact structure (config files in root of addons/logapi/)
+        New-Item -ItemType Directory -Force -Path artifacts\addons\logapi\dlls | Out-Null
+        
+        # Copy compiled module
+        Copy-Item "${{ steps.build.outputs.dll_path }}" artifacts\addons\logapi\dlls\logapi_mm.dll -Force
+        Write-Host "✓ logapi_mm.dll copied to addons/logapi/dlls/"
+        
+        # Copy config files to root of addons/logapi/ (NOT in subfolders)
+        if (Test-Path "LogApi/events.json") {
+          Copy-Item "LogApi/events.json" artifacts\addons\logapi\events.json -Force
+          Write-Host "✓ events.json copied to addons/logapi/"
+        } else {
+          Write-Host "⚠ events.json NOT FOUND - creating placeholder"
+          '{"events":[]}' | Out-File -FilePath artifacts\addons\logapi\events.json -Encoding UTF8
+        }
 
-        # Make publish directory
-        mkdir -p ..\cstrike\addons\logapi\dlls
+        if (Test-Path "LogApi/logapi.cfg") {
+          Copy-Item "LogApi/logapi.cfg" artifacts\addons\logapi\logapi.cfg -Force
+          Write-Host "✓ logapi.cfg copied to addons/logapi/"
+        } else {
+          Write-Host "⚠ logapi.cfg NOT FOUND - creating placeholder"
+          '// LogApi Config' | Out-File -FilePath artifacts\addons\logapi\logapi.cfg -Encoding UTF8
+        }
 
-        # Copy cstrike files to publish
-        copy ..\cstrike\* publish -Recurse -Force
+        if (Test-Path "LogApi/LogApi.php") {
+          Copy-Item "LogApi/LogApi.php" artifacts\addons\logapi\LogApi.php -Force
+          Write-Host "✓ LogApi.php copied to addons/logapi/"
+        } else {
+          Write-Host "⚠ LogApi.php NOT FOUND - creating placeholder"
+          '<?php // LogApi PHP Handler ?>' | Out-File -FilePath artifacts\addons\logapi\LogApi.php -Encoding UTF8
+        }
+        
+        # Show artifact contents
+        Write-Host "=== Final Artifact Contents ==="
+        Get-ChildItem -Recurse artifacts\
+      shell: pwsh
 
-        # Move released dll to publish
-        copy Release\*.dll ..\cstrike\addons\logapi\dlls -Recurse -Force
-
-    - name: Deploy artifacts
+    - name: Upload Windows Artifact
       uses: actions/upload-artifact@v4
       with:
         name: win32
-        path: ${{github.workspace}}/cstrike
+        path: ${{github.workspace}}/artifacts
+        retention-days: 30
+        if-no-files-found: error
