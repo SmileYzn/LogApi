@@ -32,38 +32,33 @@ void CLogCurl::ServerActivate() {
 }
 
 void CLogCurl::ServerFrame() {
-    if (!this->m_MultiHandle) return;
+  if (this->m_MultiHandle) {
+    int HandleCount = 0;
+    int ProcessedThisFrame = 0;
 
-    int handleCount = 0;
-    int msgsInQueue = 0;
-    CURLMsg *msgInfo = nullptr;
+    CURLMsg *MsgInfo = NULL;
 
-    // Execute pending transfers
-    curl_multi_perform(this->m_MultiHandle, &handleCount);
+    curl_multi_perform(this->m_MultiHandle, &HandleCount);
 
-    // Read completion messages
-    while ((msgInfo = curl_multi_info_read(this->m_MultiHandle, &msgsInQueue))) {
-        if (msgInfo->msg == CURLMSG_DONE) {
-            CURL *easyHandle = msgInfo->easy_handle;
-            char *pPrivate = nullptr;
-            curl_easy_getinfo(easyHandle, CURLINFO_PRIVATE, &pPrivate);
-            long index = (long)(intptr_t)pPrivate;
+    while (ProcessedThisFrame < 5 && (MsgInfo = curl_multi_info_read(
+                                          this->m_MultiHandle, &HandleCount))) {
+      if (MsgInfo->msg == CURLMSG_DONE) {
+        char *pPrivate = nullptr;
+        curl_easy_getinfo(MsgInfo->easy_handle, CURLINFO_PRIVATE, &pPrivate);
+        long Index = (long)(intptr_t)pPrivate;
 
-            auto it = this->m_Data.find(index);
-            if (it != this->m_Data.end()) {
-                // Callback to the LogApi system
-                gLogApi.CallbackResult(easyHandle, it->second.Size,
-                                     it->second.Memory,
-                                     it->second.EventIndex);
+        if (this->m_Data.find(Index) != this->m_Data.end()) {
+          gLogApi.CallbackResult(MsgInfo->easy_handle, this->m_Data[Index].Size,
+                                 this->m_Data[Index].Memory,
+                                 this->m_Data[Index].EventIndex);
 
-                if (it->second.Memory) free(it->second.Memory);
-                if (it->second.Headers) curl_slist_free_all(it->second.Headers);
-                
-                this->m_Data.erase(it);
-            }
+          free(this->m_Data[Index].Memory);
 
-            curl_multi_remove_handle(this->m_MultiHandle, easyHandle);
-            curl_easy_cleanup(easyHandle);
+          if (this->m_Data[Index].Headers) {
+            curl_slist_free_all(this->m_Data[Index].Headers);
+          }
+
+          this->m_Data.erase(Index);
         }
     }
 }
