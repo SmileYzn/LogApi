@@ -23,7 +23,7 @@ jobs:
       run: |
         docker exec build-container bash -c "
           dpkg --add-architecture i386
-          apt-get update > /dev/null 2>&1
+          apt-get update
           apt-get install -qq -y pkg-config wget unzip build-essential gcc-multilib g++-multilib libgcc1:i386 zlib1g-dev:i386
         "
 
@@ -34,34 +34,56 @@ jobs:
           wget -q https://curl.se/download/curl-8.7.1.tar.gz
           tar xf curl-8.7.1.tar.gz
           cd curl-8.7.1
-          ./configure --host=i686-linux-gnu CFLAGS='-m32' LDFLAGS='-m32' --disable-gssapi --disable-kerberos5 --disable-ntlm --without-gssapi --without-ssl --disable-shared --enable-static --prefix=/usr/local/curl32 --silent
-          make -j\$(nproc) --silent
-          make install --silent
+          ./configure --host=i686-linux-gnu CFLAGS='-m32' LDFLAGS='-m32' --disable-gssapi --disable-kerberos5 --disable-ntlm --without-gssapi --without-ssl --disable-shared --enable-static --prefix=/usr/local/curl32
+          make -j\$(nproc)
+          make install
+        "
+
+    - name: Debug - Check Source Files
+      run: |
+        docker exec build-container bash -c "
+          echo '=== Checking Source Directory ==='
+          ls -la /src/LogApi/
+          echo '=== Checking for Makefile ==='
+          if [ -f /src/LogApi/Makefile ]; then
+            echo '✓ Makefile exists'
+            cat /src/LogApi/Makefile
+          else
+            echo '✗ Makefile NOT found'
+            exit 1
+          fi
+          echo '=== Checking for .cpp files ==='
+          ls -la /src/LogApi/*.cpp || echo 'No .cpp files found'
         "
 
     - name: Execute Build
       run: |
         docker exec build-container bash -c "
           cd /src/LogApi
-          make clean || true
-          make
-          ls -la Release/
-          ldd Release/logapi_mm.so 2>&1 || true
+          echo '=== Running make clean ==='
+          make clean || echo 'clean failed or not needed'
+          echo '=== Running make ==='
+          make 2>&1
+          echo '=== Build Exit Code: $? ==='
+          echo '=== Checking Release Folder ==='
+          ls -la Release/ || echo 'Release folder does not exist'
+          echo '=== Checking for .so file ==='
+          find . -name '*.so' 2>/dev/null || echo 'No .so files found'
         "
 
     - name: Copy Build Artifacts from Container
       run: |
-        # Create artifacts folder on GitHub runner
         mkdir -p ${{github.workspace}}/artifacts/addons/logapi/dlls
         
-        # Copy from Docker container to runner
-        docker cp build-container:/src/LogApi/Release/logapi_mm.so ${{github.workspace}}/artifacts/addons/logapi/dlls/
+        docker cp build-container:/src/LogApi/Release/logapi_mm.so ${{github.workspace}}/artifacts/addons/logapi/dlls/ || {
+          echo "✗ docker cp failed, trying to find the file..."
+          docker exec build-container bash -c "find /src -name 'logapi_mm.so' 2>/dev/null"
+          exit 1
+        }
         
-        # Verify copy
         echo "=== Artifact Contents ==="
         ls -la ${{github.workspace}}/artifacts/addons/logapi/dlls/
         
-        # Verify file exists
         if [ -f "${{github.workspace}}/artifacts/addons/logapi/dlls/logapi_mm.so" ]; then
           echo "✓ logapi_mm.so copied successfully"
         else
@@ -96,7 +118,11 @@ jobs:
         }
         Write-Host "Found project: $($project.FullName)"
         
-        msbuild $project.FullName -property:Configuration=Release -property:Platform=Win32 -nologo -verbosity:minimal
+        msbuild $project.FullName -property:Configuration=Release -property:Platform=Win32 -nologo -verbosity:detailed
+        if ($LASTEXITCODE -ne 0) {
+          Write-Error "Build failed!"
+          exit 1
+        }
         
         $dll = Get-ChildItem -Recurse -Filter "logapi_mm.dll" | Select-Object -First 1
         if (!$dll) {
