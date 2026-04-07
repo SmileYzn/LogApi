@@ -12,7 +12,7 @@ CLEAN_CMD=rm -rf $(BUILD_DIR)
 # Common build definitions
 BUILD_NAME=logapi_mm
 BUILD_SOURCES=$(wildcard *.cpp)
-BUILD_CFLAGS=-std=c++11 -Wall -Wno-unknown-pragmas -fcommon -m32 -mtune=generic -msse3 -msse4.1 -shared -s -pipe -g0 -O3 -fPIC -funroll-loops -fomit-frame-pointer -fno-stack-protector -fvisibility=hidden
+BUILD_CFLAGS=-std=c++11 -Wall -Wno-unknown-pragmas -Wno-strict-aliasing -fcommon -m32 -mtune=generic -msse3 -msse4.1 -shared -s -pipe -g0 -O3 -fPIC -funroll-loops -fomit-frame-pointer -fno-stack-protector -fvisibility=hidden
 BUILD_TARGET=linux32
 BUILD_EXTENSION=so
 BUILD_OBJECTS=$(BUILD_SOURCES:%.cpp=$(BUILD_DIR)/%.o)
