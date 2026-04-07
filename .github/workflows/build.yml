@@ -33,17 +33,31 @@ jobs:
     - name: Install Development Tools Packages
       env:
         SCRIPT: |
-          # Add i386 architecture
           dpkg --add-architecture i386
-
-          # Update repository
           apt-get update > /dev/null
+          apt-get install -qq -y pkg-config wget unzip build-essential gcc-multilib g++-multilib libgcc1:i386 zlib1g-dev:i386 libssl-dev:i386 > /dev/null
+      run: docker exec build-container bash -c "$SCRIPT"
 
-          # Install build dependencies
-          apt-get install -qq -y pkg-config wget unzip build-essential gcc-4.8-multilib g++-4.8-multilib libgcc1:i386 libcurl4-openssl-dev:i386 zlib1g-dev:i386 libssl-dev:i386 libkrb5-dev:i386 > /dev/null
-
-          # Update alternatives
-          update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-4.8 100 --slave /usr/bin/g++ g++ /usr/bin/g++-4.8
+    - name: Build libcurl 32-bit without GSSAPI
+      env:
+        SCRIPT: |
+          cd /tmp
+          wget -q https://curl.se/download/curl-8.7.1.tar.gz
+          tar xf curl-8.7.1.tar.gz
+          cd curl-8.7.1
+          ./configure --host=i686-linux-gnu \
+            CFLAGS="-m32" LDFLAGS="-m32" \
+            --disable-gssapi \
+            --disable-kerberos5 \
+            --disable-ntlm \
+            --without-gssapi \
+            --without-ssl \
+            --disable-shared \
+            --enable-static \
+            --prefix=/usr/local/curl32 \
+            --silent
+          make -j$(nproc) --silent
+          make install --silent
       run: docker exec build-container bash -c "$SCRIPT"
 
     - name: Execute Build
@@ -51,19 +65,15 @@ jobs:
         SCRIPT: |
           # Open makefile directory
           cd /desktop/LogApi
-
-          # Make Release Directory
           mkdir -p Release
-
+          
           # Make linux (Without post build script)
+          make clean
           make
 
           # Make dlls path
           mkdir -p ../cstrike/addons/logapi/dlls
-
-          # Copy release file
-          cp ./Release/logapi_mm.so ../cstrike/addons/logapi/dlls
-
+          cp ./Release/logapi_mm.so ../cstrike/addons/logapi/dlls/
       run: docker exec build-container bash -c "$SCRIPT"
 
     - name: Deploy artifacts
@@ -75,13 +85,10 @@ jobs:
   windows:
     name: Windows Build
     runs-on: windows-latest
-  
     steps:
     - uses: actions/checkout@v4
-
     - name: Add MSBuild to PATH
       uses: microsoft/setup-msbuild@v2
-
     - name: Execute Build
       working-directory: ${{github.workspace}}
       run: |
@@ -96,13 +103,7 @@ jobs:
 
         # Make publish directory
         mkdir -p ..\cstrike\addons\logapi\dlls
-
-        # Copy cstrike files to publish
-        copy ..\cstrike\* publish -Recurse -Force
-
-        # Move released dll to publish
-        copy Release\*.dll ..\cstrike\addons\logapi\dlls -Recurse -Force
-
+        copy Release\*.dll ..\cstrike\addons\logapi\dlls\
     - name: Deploy artifacts
       uses: actions/upload-artifact@v4
       with:

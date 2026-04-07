@@ -62,4 +62,5 @@ private:
 	float m_FrameTime = 0.0f;
 };
 
-extern CLogApi gLogApi;
+extern class CLogApi* g_pLogApi;
+#define gLogApi (*g_pLogApi)

@@ -1,51 +1,37 @@
-# Makefile settings
 MAKEFLAGS += --warn-undefined-variables --silent
-#
-# Build directory
+
 BUILD_DIR=Release
-#
-# System based commands
-PRE_CMD=mkdir -p $(BUILD_DIR)
-POS_CMD=sh PostBuild.sh
-CLEAN_CMD=rm -rf $(BUILD_DIR)
-#
-# Common build definitions
 BUILD_NAME=logapi_mm
 BUILD_SOURCES=$(wildcard *.cpp)
-BUILD_CFLAGS=-std=c++11 -Wall -Wno-unknown-pragmas -fcommon -m32 -mtune=generic -msse3 -msse4.1 -shared -s -pipe -g0 -O3 -fPIC -funroll-loops -fomit-frame-pointer -fno-stack-protector -fvisibility=hidden
-BUILD_TARGET=linux32
-BUILD_EXTENSION=so
 BUILD_OBJECTS=$(BUILD_SOURCES:%.cpp=$(BUILD_DIR)/%.o)
-BUILD_COMPILER=c++
-BUILD_LINKER=-static-libgcc -static-libstdc++ -lcurl -lssl -lcrypto -ldl -lm -lz
-BUILD_CCFLAGS=$(BUILD_CFLAGS) -DNDEBUG -Dlinux -D__linux__ -D__BUILD__ -D_GLIBCXX_USE_CXX11_ABI=0 -DCURL_STATICLIB -DHTTP_ONLY
-#
-# Include directory
-SRCDIR=.
-METAMOD=include/metamod
-SDK=include/cssdk
-INCLUDE=-I$(SRCDIR) -I$(METAMOD) -I$(SDK)/common -I$(SDK)/dlls -I$(SDK)/engine -I$(SDK)/game_shared -I$(SDK)/pm_shared -I$(SDK)/public
-#
-# Defult: prebuild, linux32, posbuild
-default: prebuild $(BUILD_TARGET) posbuild
-#
-# Linux: prebuild, linux32, posbuild
-linux: $(BUILD_TARGET)
-#
-# Pre-build: Execute command
+BUILD_COMPILER=g++
+
+# Flags de Compilação
+# Mantivemos o fno-stack-protector para evitar o conflito de stack que vimos nos logs
+BUILD_CFLAGS=-std=c++11 -Wall -fcommon -m32 -O3 -fPIC -msse4.1 -march=i686 \
+             -D_GLIBCXX_USE_CXX11_ABI=0 -fno-stack-protector -fno-strict-aliasing
+
+BUILD_CCFLAGS=$(BUILD_CFLAGS) -DNDEBUG -Dlinux -DCURL_STATICLIB -DHTTP_ONLY
+
+# Linker corrigido: Bibliotecas (-l...) SEMPRE por último.
+# -shared e -o devem vir antes dos comandos de linkagem de biblioteca.
+LDFLAGS=-m32 -shared
+LIBS=-L/usr/local/curl32/lib -lcurl -lz -lpthread -lrt -ldl -lm
+
+INCLUDE=-I. -Iinclude/metamod -Iinclude/cssdk/common -Iinclude/cssdk/dlls \
+        -Iinclude/cssdk/engine -Iinclude/cssdk/game_shared -Iinclude/cssdk/pm_shared \
+        -Iinclude/cssdk/public -I/usr/local/curl32/include
+
+default: prebuild linux32
+
 prebuild:
-	$(PRE_CMD)
-#
-# Pos-build: Execute command
-posbuild:
-	$(POS_CMD)
-#
-# Linux target build
-$(BUILD_TARGET): $(BUILD_OBJECTS)
-	$(BUILD_COMPILER) $(INCLUDE) $(BUILD_CCFLAGS) $(BUILD_OBJECTS) $(BUILD_LINKER) -o$(BUILD_DIR)/$(BUILD_NAME).$(BUILD_EXTENSION)
+	mkdir -p $(BUILD_DIR)
+
+linux32: $(BUILD_OBJECTS)
+	$(BUILD_COMPILER) $(LDFLAGS) -o $(BUILD_DIR)/$(BUILD_NAME).so $(BUILD_OBJECTS) $(LIBS)
+
 $(BUILD_DIR)/%.o: %.cpp
 	$(BUILD_COMPILER) $(INCLUDE) $(BUILD_CCFLAGS) -o $@ -c $<
-#
-# Clean
+
 clean:
-	$(CLEAN_CMD)
+	rm -rf $(BUILD_DIR)

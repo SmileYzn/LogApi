@@ -13,6 +13,9 @@ plugin_info_t Plugin_info = {
     PT_ANYTIME,
 };
 
+CLogApi* g_pLogApi = nullptr;
+CLogCurl* g_pLogCurl = nullptr;
+
 enginefuncs_t g_engfuncs;
 globalvars_t *gpGlobals;
 meta_globals_t *gpMetaGlobals;
@@ -22,56 +25,59 @@ META_FUNCTIONS gMetaFunctionTable;
 
 C_DLLEXPORT void WINAPI GiveFnptrsToDll(enginefuncs_t *pengfuncsFromEngine,
                                         globalvars_t *pGlobals) {
-  memcpy(&g_engfuncs, pengfuncsFromEngine, sizeof(enginefuncs_t));
-
-  gpGlobals = pGlobals;
+    memcpy(&g_engfuncs, pengfuncsFromEngine, sizeof(enginefuncs_t));
+    gpGlobals = pGlobals;
 }
 
 C_DLLEXPORT int Meta_Attach(PLUG_LOADTIME now, META_FUNCTIONS *pFunctionTable,
                             meta_globals_t *pMGlobals,
                             gamedll_funcs_t *pGamedllFuncs) {
-  gpMetaGlobals = pMGlobals;
+    gpMetaGlobals = pMGlobals;
+    gpGamedllFuncs = pGamedllFuncs;
 
-  gpGamedllFuncs = pGamedllFuncs;
+    memset(&gMetaFunctionTable, 0, sizeof(META_FUNCTIONS));
+    gMetaFunctionTable.pfnGetEntityAPI2 = GetEntityAPI2;
+    gMetaFunctionTable.pfnGetEntityAPI2_Post = GetEntityAPI2_Post;
+    gMetaFunctionTable.pfnGetEngineFunctions = GetEngineFunctions;
+    gMetaFunctionTable.pfnGetEngineFunctions_Post = GetEngineFunctions_Post;
+    gMetaFunctionTable.pfnGetNewDLLFunctions = GetNewDLLFunctions;
+    gMetaFunctionTable.pfnGetNewDLLFunctions_Post = GetNewDLLFunctions_Post;
 
-  memset(&gMetaFunctionTable, 0, sizeof(META_FUNCTIONS));
+    memcpy(pFunctionTable, &gMetaFunctionTable, sizeof(META_FUNCTIONS));
 
-  gMetaFunctionTable.pfnGetEntityAPI2 = GetEntityAPI2;
+    // --- SAFE DYNAMIC ALLOCATION ---
+    // Objects are created only after Metamod has stabilized the environment
+    if (g_pLogApi == nullptr) g_pLogApi = new CLogApi();
+    if (g_pLogCurl == nullptr) g_pLogCurl = new CLogCurl();
 
-  gMetaFunctionTable.pfnGetEntityAPI2_Post = GetEntityAPI2_Post;
+    ReAPI_Init();
+    ReGameDLL_Init();
 
-  gMetaFunctionTable.pfnGetEngineFunctions = GetEngineFunctions;
-
-  gMetaFunctionTable.pfnGetEngineFunctions_Post = GetEngineFunctions_Post;
-
-  gMetaFunctionTable.pfnGetNewDLLFunctions = GetNewDLLFunctions;
-
-  gMetaFunctionTable.pfnGetNewDLLFunctions_Post = GetNewDLLFunctions_Post;
-
-  memcpy(pFunctionTable, &gMetaFunctionTable, sizeof(META_FUNCTIONS));
-
-  ReAPI_Init();
-
-  ReGameDLL_Init();
-
-  return TRUE;
+    return TRUE;
 }
 
 C_DLLEXPORT int Meta_Detach(PLUG_LOADTIME now, PL_UNLOAD_REASON reason) {
-  ReAPI_Stop();
+    ReAPI_Stop();
+    ReGameDLL_Stop();
 
-  ReGameDLL_Stop();
+    if (g_pLogApi != nullptr) {
+        delete g_pLogApi;
+        g_pLogApi = nullptr;
+    }
 
-  return TRUE;
+    // FIX:
+    if (g_pLogCurl != nullptr) {
+        delete g_pLogCurl;
+        g_pLogCurl = nullptr;
+    }
+
+    return TRUE;
 }
-
 C_DLLEXPORT int Meta_Query(char *interfaceVersion, plugin_info_t **pPlugInfo,
                            mutil_funcs_t *pMetaUtilFuncs) {
-  *pPlugInfo = PLID;
-
-  gpMetaUtilFuncs = pMetaUtilFuncs;
-
-  return TRUE;
+    *pPlugInfo = &Plugin_info;
+    gpMetaUtilFuncs = pMetaUtilFuncs;
+    return TRUE;
 }
 #pragma endregion
 
@@ -79,10 +85,10 @@ C_DLLEXPORT int Meta_Query(char *interfaceVersion, plugin_info_t **pPlugInfo,
 DLL_FUNCTIONS g_DLL_FunctionTable_Pre;
 
 C_DLLEXPORT int GetEntityAPI2(DLL_FUNCTIONS *pFunctionTable,
-                              int *interfaceVersion) {
+                               int *interfaceVersion) {
   memset(&g_DLL_FunctionTable_Pre, 0, sizeof(DLL_FUNCTIONS));
 
-  // Funtion hooks here
+  // Function hooks here
 
   memcpy(pFunctionTable, &g_DLL_FunctionTable_Pre, sizeof(DLL_FUNCTIONS));
 
@@ -121,33 +127,30 @@ C_DLLEXPORT int GetEntityAPI2_Post(DLL_FUNCTIONS *pFunctionTable,
 
 void DLL_POST_ServerActivate(edict_t *pEdictList, int edictCount,
                              int clientMax) {
-  gLogCvar.ServerActivate();
+    gLogCvar.ServerActivate();
+    
+    // Access is safe via initialized pointer
+    if (g_pLogApi) gLogApi.ServerActivate();
+    if (g_pLogCurl) gLogCurl.ServerActivate();
 
-  gLogApi.ServerActivate();
+    gLogCommand.ServerActivate();
+    gLogEvent.ServerActivate(pEdictList, edictCount, clientMax);
 
-  gLogCurl.ServerActivate();
-
-  gLogCommand.ServerActivate();
-
-  gLogEvent.ServerActivate(pEdictList, edictCount, clientMax);
-
-  RETURN_META(MRES_IGNORED);
+    RETURN_META(MRES_IGNORED);
 }
 
 void DLL_POST_ServerDeactivate(void) {
-  gLogApi.ServerDeactivate();
+    if (g_pLogApi) gLogApi.ServerDeactivate();
+    gLogEvent.ServerDeactivate();
 
-  gLogEvent.ServerDeactivate();
-
-  RETURN_META(MRES_IGNORED);
+    RETURN_META(MRES_IGNORED);
 }
 
 void DLL_POST_StartFrame() {
-  gLogCurl.ServerFrame();
+    if (g_pLogCurl) gLogCurl.ServerFrame();
+    if (g_pLogApi) gLogApi.ServerFrame();
 
-  gLogApi.ServerFrame();
-
-  RETURN_META(MRES_IGNORED);
+    RETURN_META(MRES_IGNORED);
 }
 
 qboolean DLL_POST_ClientConnect(edict_t *pEntity, const char *pszName,

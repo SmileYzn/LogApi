@@ -69,11 +69,11 @@
 #include "include/json.hpp"
 
 // Log API
-#include "LogCvar.h"
+#include "LogUtil.h"
+#include "LogCurl.h"
 #include "LogMenu.h"
 #include "LogApi.h"
+#include "LogCvar.h"
 #include "LogCommand.h"
-#include "LogCurl.h"
 #include "LogEvent.h"
 #include "LogPlayer.h"
-#include "LogUtil.h"
