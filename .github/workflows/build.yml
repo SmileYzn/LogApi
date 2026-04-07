@@ -37,47 +37,37 @@ jobs:
           ./configure --host=i686-linux-gnu CFLAGS='-m32' LDFLAGS='-m32' --disable-gssapi --disable-kerberos5 --disable-ntlm --without-gssapi --without-ssl --disable-shared --enable-static --prefix=/usr/local/curl32 --silent
           make -j\$(nproc) --silent
           make install --silent
-          echo 'libcurl built:'
-          ls -la /usr/local/curl32/lib/
         "
 
     - name: Execute Build
-      id: build
       run: |
         docker exec build-container bash -c "
-          echo '=== Starting Build ==='
           cd /src/LogApi
-          echo '=== Current Directory ==='
-          pwd
-          echo '=== Directory Contents ==='
-          ls -la
-          echo '=== Makefile Check ==='
-          if [ -f Makefile ]; then
-            echo '✓ Makefile found'
-          else
-            echo '✗ Makefile NOT found!'
-            exit 1
-          fi
-          echo '=== Clean ==='
           make clean || true
-          echo '=== Build ==='
           make
-          echo '=== Release Folder ==='
           ls -la Release/
-          echo '=== SO File ==='
-          ls -la Release/*.so || echo 'NO .SO FOUND'
-          echo '=== Dependencies ==='
           ldd Release/logapi_mm.so 2>&1 || true
         "
 
-    - name: Prepare Linux Artifact
+    - name: Copy Build Artifacts from Container
       run: |
-        docker exec build-container bash -c "
-          mkdir -p /src/artifacts/addons/logapi/dlls
-          cp /src/LogApi/Release/logapi_mm.so /src/artifacts/addons/logapi/dlls/
-          echo '=== Artifact Contents ==='
-          ls -laR /src/artifacts/
-        "
+        # Create artifacts folder on GitHub runner
+        mkdir -p ${{github.workspace}}/artifacts/addons/logapi/dlls
+        
+        # Copy from Docker container to runner
+        docker cp build-container:/src/LogApi/Release/logapi_mm.so ${{github.workspace}}/artifacts/addons/logapi/dlls/
+        
+        # Verify copy
+        echo "=== Artifact Contents ==="
+        ls -la ${{github.workspace}}/artifacts/addons/logapi/dlls/
+        
+        # Verify file exists
+        if [ -f "${{github.workspace}}/artifacts/addons/logapi/dlls/logapi_mm.so" ]; then
+          echo "✓ logapi_mm.so copied successfully"
+        else
+          echo "✗ Failed to copy logapi_mm.so"
+          exit 1
+        fi
 
     - name: Upload Linux Artifact
       uses: actions/upload-artifact@v4
@@ -99,7 +89,6 @@ jobs:
     - name: Find and Build Project
       id: build
       run: |
-        # Find vcxproj in LogApi subfolder
         $project = Get-ChildItem -Recurse -Filter "*.vcxproj" | Select-Object -First 1
         if (!$project) {
           Write-Error "No .vcxproj found!"
@@ -107,10 +96,8 @@ jobs:
         }
         Write-Host "Found project: $($project.FullName)"
         
-        # Build
         msbuild $project.FullName -property:Configuration=Release -property:Platform=Win32 -nologo -verbosity:minimal
         
-        # Find output
         $dll = Get-ChildItem -Recurse -Filter "logapi_mm.dll" | Select-Object -First 1
         if (!$dll) {
           Write-Error "logapi_mm.dll not found!"
@@ -118,7 +105,6 @@ jobs:
         }
         Write-Host "Found DLL: $($dll.FullName)"
         
-        # Save path for next step
         echo "dll_path=$($dll.FullName)" >> $env:GITHUB_OUTPUT
       shell: pwsh
 
