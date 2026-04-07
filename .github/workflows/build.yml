@@ -172,15 +172,15 @@ jobs:
         
         # Copy config files from LogApi/ folder
         if (Test-Path "LogApi/events.json") {
-          Copy-Item "LogApi/events.json" artifacts\addons\logapi\config\events.json -Force
+          Copy-Item "LogApi/events.json" artifacts\addons\logapi\events.json -Force
           Write-Host "✓ events.json copied"
         } else {
           Write-Host "⚠ events.json NOT FOUND - creating placeholder"
-          '{"events":[]}' | Out-File -FilePath artifacts\addons\logapi\config\events.json -Encoding UTF8
+          '{"events":[]}' | Out-File -FilePath artifacts\addons\logapi\events.json -Encoding UTF8
         }
 
         if (Test-Path "LogApi/logapi.cfg") {
-          Copy-Item "LogApi/logapi.cfg" artifacts\addons\logapi\config\logapi.cfg -Force
+          Copy-Item "LogApi/logapi.cfg" artifacts\addons\logapi\logapi.cfg -Force
           Write-Host "✓ logapi.cfg copied"
         } else {
           Write-Host "⚠ logapi.cfg NOT FOUND - creating placeholder"
