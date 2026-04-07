@@ -14,6 +14,17 @@ jobs:
 
     - uses: actions/checkout@v4
 
+    - name: Check Repository Structure
+      run: |
+        echo "=== Repository Root Contents ==="
+        ls -la ${{github.workspace}}/
+        echo "=== LogApi Folder Contents ==="
+        ls -la ${{github.workspace}}/LogApi/ 2>/dev/null || echo "LogApi folder not found"
+        echo "=== Looking for config files ==="
+        find ${{github.workspace}} -name "events.json" 2>/dev/null || echo "events.json not found"
+        find ${{github.workspace}} -name "logapi.cfg" 2>/dev/null || echo "logapi.cfg not found"
+        find ${{github.workspace}} -name "LogApi.php" 2>/dev/null || echo "LogApi.php not found"
+
     - name: Start Docker Container
       run: |
         docker pull $CONTAINER
@@ -43,46 +54,63 @@ jobs:
       run: |
         docker exec build-container bash -c "
           cd /src/LogApi
+          echo '=== Cleaning ==='
           make clean || true
+          echo '=== Building ==='
           make
+          echo '=== Build Result ==='
           ls -la Release/
+          echo '=== Dependencies ==='
           ldd Release/logapi_mm.so 2>&1 || true
         "
 
     - name: Prepare Linux Artifact
       run: |
-        # Create artifact structure on GitHub runner
+        # Create artifact structure
         mkdir -p ${{github.workspace}}/artifacts/addons/logapi/dlls
         mkdir -p ${{github.workspace}}/artifacts/addons/logapi/config
         mkdir -p ${{github.workspace}}/artifacts/addons/logapi/php
         
-        # Copy compiled module from Docker container
+        # Copy compiled module from Docker
         docker cp build-container:/src/LogApi/Release/logapi_mm.so ${{github.workspace}}/artifacts/addons/logapi/dlls/
+        echo "✓ logapi_mm.so copied"
         
-        # Copy configuration files from repository
+        # Copy config files (search in both root and LogApi folder)
         if [ -f "${{github.workspace}}/LogApi/events.json" ]; then
           cp ${{github.workspace}}/LogApi/events.json ${{github.workspace}}/artifacts/addons/logapi/config/
-          echo "✓ events.json copied"
+          echo "✓ events.json copied from LogApi/"
+        elif [ -f "${{github.workspace}}/events.json" ]; then
+          cp ${{github.workspace}}/events.json ${{github.workspace}}/artifacts/addons/logapi/config/
+          echo "✓ events.json copied from root"
         else
-          echo "✗ events.json not found"
+          echo "⚠ events.json NOT FOUND - creating placeholder"
+          echo '{"events":[]}' > ${{github.workspace}}/artifacts/addons/logapi/config/events.json
         fi
         
         if [ -f "${{github.workspace}}/LogApi/logapi.cfg" ]; then
           cp ${{github.workspace}}/LogApi/logapi.cfg ${{github.workspace}}/artifacts/addons/logapi/config/
-          echo "✓ logapi.cfg copied"
+          echo "✓ logapi.cfg copied from LogApi/"
+        elif [ -f "${{github.workspace}}/logapi.cfg" ]; then
+          cp ${{github.workspace}}/logapi.cfg ${{github.workspace}}/artifacts/addons/logapi/config/
+          echo "✓ logapi.cfg copied from root"
         else
-          echo "✗ logapi.cfg not found"
+          echo "⚠ logapi.cfg NOT FOUND - creating placeholder"
+          echo '// LogApi Config' > ${{github.workspace}}/artifacts/addons/logapi/config/logapi.cfg
         fi
         
         if [ -f "${{github.workspace}}/LogApi/LogApi.php" ]; then
           cp ${{github.workspace}}/LogApi/LogApi.php ${{github.workspace}}/artifacts/addons/logapi/php/
-          echo "✓ LogApi.php copied"
+          echo "✓ LogApi.php copied from LogApi/"
+        elif [ -f "${{github.workspace}}/LogApi.php" ]; then
+          cp ${{github.workspace}}/LogApi.php ${{github.workspace}}/artifacts/addons/logapi/php/
+          echo "✓ LogApi.php copied from root"
         else
-          echo "✗ LogApi.php not found"
+          echo "⚠ LogApi.php NOT FOUND - creating placeholder"
+          echo '<?php // LogApi PHP Handler ?>' > ${{github.workspace}}/artifacts/addons/logapi/php/LogApi.php
         fi
         
-        # Show artifact contents
-        echo "=== Artifact Contents ==="
+        # Show final artifact contents
+        echo "=== Final Artifact Contents ==="
         find ${{github.workspace}}/artifacts -type f
 
     - name: Upload Linux Artifact
@@ -101,6 +129,18 @@ jobs:
 
     - name: Add MSBuild to PATH
       uses: microsoft/setup-msbuild@v2
+
+    - name: Check Repository Structure
+      run: |
+        echo "=== Repository Root Contents ==="
+        dir ${{github.workspace}}
+        echo "=== LogApi Folder Contents ==="
+        dir ${{github.workspace}}\LogApi 2>$null || echo "LogApi folder not found"
+        echo "=== Looking for config files ==="
+        Get-ChildItem -Recurse -Filter "events.json" 2>$null | Select-Object FullName
+        Get-ChildItem -Recurse -Filter "logapi.cfg" 2>$null | Select-Object FullName
+        Get-ChildItem -Recurse -Filter "LogApi.php" 2>$null | Select-Object FullName
+      shell: pwsh
 
     - name: Find and Build Project
       id: build
@@ -139,30 +179,42 @@ jobs:
         Copy-Item "${{ steps.build.outputs.dll_path }}" artifacts\addons\logapi\dlls\logapi_mm.dll -Force
         Write-Host "✓ logapi_mm.dll copied"
         
-        # Copy configuration files
+        # Copy config files
         if (Test-Path "LogApi/events.json") {
           Copy-Item "LogApi/events.json" artifacts\addons\logapi\config\events.json -Force
           Write-Host "✓ events.json copied"
+        } elseif (Test-Path "events.json") {
+          Copy-Item "events.json" artifacts\addons\logapi\config\events.json -Force
+          Write-Host "✓ events.json copied from root"
         } else {
-          Write-Host "✗ events.json not found"
-        }
+          Write-Host "⚠ events.json NOT FOUND - creating placeholder"
+          '{"events":[]}' | Out-File -FilePath artifacts\addons\logapi\config\events.json -Encoding UTF8
+        fi
         
         if (Test-Path "LogApi/logapi.cfg") {
           Copy-Item "LogApi/logapi.cfg" artifacts\addons\logapi\config\logapi.cfg -Force
           Write-Host "✓ logapi.cfg copied"
+        } elseif (Test-Path "logapi.cfg") {
+          Copy-Item "logapi.cfg" artifacts\addons\logapi\config\logapi.cfg -Force
+          Write-Host "✓ logapi.cfg copied from root"
         } else {
-          Write-Host "✗ logapi.cfg not found"
-        }
+          Write-Host "⚠ logapi.cfg NOT FOUND - creating placeholder"
+          '// LogApi Config' | Out-File -FilePath artifacts\addons\logapi\config\logapi.cfg -Encoding UTF8
+        fi
         
         if (Test-Path "LogApi/LogApi.php") {
           Copy-Item "LogApi/LogApi.php" artifacts\addons\logapi\php\LogApi.php -Force
           Write-Host "✓ LogApi.php copied"
+        } elseif (Test-Path "LogApi.php") {
+          Copy-Item "LogApi.php" artifacts\addons\logapi\php\LogApi.php -Force
+          Write-Host "✓ LogApi.php copied from root"
         } else {
-          Write-Host "✗ LogApi.php not found"
-        }
+          Write-Host "⚠ LogApi.php NOT FOUND - creating placeholder"
+          '<?php // LogApi PHP Handler ?>' | Out-File -FilePath artifacts\addons\logapi\php\LogApi.php -Encoding UTF8
+        fi
         
         # Show artifact contents
-        Write-Host "=== Artifact Contents ==="
+        Write-Host "=== Final Artifact Contents ==="
         Get-ChildItem -Recurse artifacts\
       shell: pwsh
 
