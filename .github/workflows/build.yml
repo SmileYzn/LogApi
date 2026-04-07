@@ -39,57 +39,51 @@ jobs:
           make install
         "
 
-    - name: Debug - Check Source Files
-      run: |
-        docker exec build-container bash -c "
-          echo '=== Checking Source Directory ==='
-          ls -la /src/LogApi/
-          echo '=== Checking for Makefile ==='
-          if [ -f /src/LogApi/Makefile ]; then
-            echo '✓ Makefile exists'
-            cat /src/LogApi/Makefile
-          else
-            echo '✗ Makefile NOT found'
-            exit 1
-          fi
-          echo '=== Checking for .cpp files ==='
-          ls -la /src/LogApi/*.cpp || echo 'No .cpp files found'
-        "
-
     - name: Execute Build
       run: |
         docker exec build-container bash -c "
           cd /src/LogApi
-          echo '=== Running make clean ==='
-          make clean || echo 'clean failed or not needed'
-          echo '=== Running make ==='
-          make 2>&1
-          echo '=== Build Exit Code: $? ==='
-          echo '=== Checking Release Folder ==='
-          ls -la Release/ || echo 'Release folder does not exist'
-          echo '=== Checking for .so file ==='
-          find . -name '*.so' 2>/dev/null || echo 'No .so files found'
+          make clean || true
+          make
+          ls -la Release/
+          ldd Release/logapi_mm.so 2>&1 || true
         "
 
-    - name: Copy Build Artifacts from Container
+    - name: Prepare Linux Artifact
       run: |
+        # Create artifact structure on GitHub runner
         mkdir -p ${{github.workspace}}/artifacts/addons/logapi/dlls
+        mkdir -p ${{github.workspace}}/artifacts/addons/logapi/config
+        mkdir -p ${{github.workspace}}/artifacts/addons/logapi/php
         
-        docker cp build-container:/src/LogApi/Release/logapi_mm.so ${{github.workspace}}/artifacts/addons/logapi/dlls/ || {
-          echo "✗ docker cp failed, trying to find the file..."
-          docker exec build-container bash -c "find /src -name 'logapi_mm.so' 2>/dev/null"
-          exit 1
-        }
+        # Copy compiled module from Docker container
+        docker cp build-container:/src/LogApi/Release/logapi_mm.so ${{github.workspace}}/artifacts/addons/logapi/dlls/
         
-        echo "=== Artifact Contents ==="
-        ls -la ${{github.workspace}}/artifacts/addons/logapi/dlls/
-        
-        if [ -f "${{github.workspace}}/artifacts/addons/logapi/dlls/logapi_mm.so" ]; then
-          echo "✓ logapi_mm.so copied successfully"
+        # Copy configuration files from repository
+        if [ -f "${{github.workspace}}/LogApi/events.json" ]; then
+          cp ${{github.workspace}}/LogApi/events.json ${{github.workspace}}/artifacts/addons/logapi/config/
+          echo "✓ events.json copied"
         else
-          echo "✗ Failed to copy logapi_mm.so"
-          exit 1
+          echo "✗ events.json not found"
         fi
+        
+        if [ -f "${{github.workspace}}/LogApi/logapi.cfg" ]; then
+          cp ${{github.workspace}}/LogApi/logapi.cfg ${{github.workspace}}/artifacts/addons/logapi/config/
+          echo "✓ logapi.cfg copied"
+        else
+          echo "✗ logapi.cfg not found"
+        fi
+        
+        if [ -f "${{github.workspace}}/LogApi/LogApi.php" ]; then
+          cp ${{github.workspace}}/LogApi/LogApi.php ${{github.workspace}}/artifacts/addons/logapi/php/
+          echo "✓ LogApi.php copied"
+        else
+          echo "✗ LogApi.php not found"
+        fi
+        
+        # Show artifact contents
+        echo "=== Artifact Contents ==="
+        find ${{github.workspace}}/artifacts -type f
 
     - name: Upload Linux Artifact
       uses: actions/upload-artifact@v4
@@ -118,7 +112,7 @@ jobs:
         }
         Write-Host "Found project: $($project.FullName)"
         
-        msbuild $project.FullName -property:Configuration=Release -property:Platform=Win32 -nologo -verbosity:detailed
+        msbuild $project.FullName -property:Configuration=Release -property:Platform=Win32 -nologo -verbosity:minimal
         if ($LASTEXITCODE -ne 0) {
           Write-Error "Build failed!"
           exit 1
@@ -136,8 +130,38 @@ jobs:
 
     - name: Prepare Windows Artifact
       run: |
+        # Create artifact structure
         New-Item -ItemType Directory -Force -Path artifacts\addons\logapi\dlls | Out-Null
+        New-Item -ItemType Directory -Force -Path artifacts\addons\logapi\config | Out-Null
+        New-Item -ItemType Directory -Force -Path artifacts\addons\logapi\php | Out-Null
+        
+        # Copy compiled module
         Copy-Item "${{ steps.build.outputs.dll_path }}" artifacts\addons\logapi\dlls\logapi_mm.dll -Force
+        Write-Host "✓ logapi_mm.dll copied"
+        
+        # Copy configuration files
+        if (Test-Path "LogApi/events.json") {
+          Copy-Item "LogApi/events.json" artifacts\addons\logapi\config\events.json -Force
+          Write-Host "✓ events.json copied"
+        } else {
+          Write-Host "✗ events.json not found"
+        }
+        
+        if (Test-Path "LogApi/logapi.cfg") {
+          Copy-Item "LogApi/logapi.cfg" artifacts\addons\logapi\config\logapi.cfg -Force
+          Write-Host "✓ logapi.cfg copied"
+        } else {
+          Write-Host "✗ logapi.cfg not found"
+        }
+        
+        if (Test-Path "LogApi/LogApi.php") {
+          Copy-Item "LogApi/LogApi.php" artifacts\addons\logapi\php\LogApi.php -Force
+          Write-Host "✓ LogApi.php copied"
+        } else {
+          Write-Host "✗ LogApi.php not found"
+        }
+        
+        # Show artifact contents
         Write-Host "=== Artifact Contents ==="
         Get-ChildItem -Recurse artifacts\
       shell: pwsh
