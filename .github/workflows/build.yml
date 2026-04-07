@@ -1,16 +1,5 @@
 #
-# https://github.com/actions/checkout/issues/1590#issuecomment-2567109195
-#
-# We manually start a container and execute scripts in it instead of using `jobs.build.container`,
-# otherwise we couldn't use GitHub-provided actions (checkout, cache, etc.) as they rely on Node20
-# which would not necessarily be available on some containers (e.g., Ubuntu 18.04).
-#
-# See: https://github.com/actions/checkout/issues/1590
-#
-# If you need to pass environment variables from the GitHub host runner to the Docker container,
-# you can do so by adding `-e MY_VAR` to the docker run command, for example:
-#
-#    docker run --name build-container -d -e GITHUB_REPOSITORY -v ...
+# GitHub Actions Build System - LogApi
 #
 name: Action Build System
 on: [push]
@@ -28,29 +17,27 @@ jobs:
     - name: Start Docker Container
       run: |
         docker pull $CONTAINER
-        docker run --name build-container -d -v ${{github.workspace}}:/desktop $CONTAINER tail -f /dev/null
+        docker run --name build-container -d -v ${{github.workspace}}:/workspace $CONTAINER tail -f /dev/null
 
     - name: Install Development Tools Packages
       env:
         SCRIPT: |
-          # Add i386 architecture
           dpkg --add-architecture i386
-
-          # Update repository
-          apt-get update > /dev/null
-
-          # Install build dependencies (without libcurl - we build it statically)
+          apt-get update > /dev/null 2>&1
           apt-get install -qq -y pkg-config wget unzip build-essential gcc-multilib g++-multilib \
-          libgcc1:i386 zlib1g-dev:i386 > /dev/null
+          libgcc1:i386 zlib1g-dev:i386 > /dev/null 2>&1
+          echo "✓ Packages installed"
       run: docker exec build-container bash -c "$SCRIPT"
 
     - name: Build libcurl 32-bit Static
       env:
         SCRIPT: |
           cd /tmp
+          echo "Downloading curl..."
           wget -q https://curl.se/download/curl-8.7.1.tar.gz
           tar xf curl-8.7.1.tar.gz
           cd curl-8.7.1
+          echo "Configuring curl..."
           ./configure --host=i686-linux-gnu \
             CFLAGS="-m32" LDFLAGS="-m32" \
             --disable-gssapi \
@@ -62,74 +49,122 @@ jobs:
             --enable-static \
             --prefix=/usr/local/curl32 \
             --silent
+          echo "Building curl..."
           make -j$(nproc) --silent
           make install --silent
+          echo "✓ libcurl built successfully"
+          ls -la /usr/local/curl32/lib/
       run: docker exec build-container bash -c "$SCRIPT"
 
     - name: Execute Build
       env:
         SCRIPT: |
-          # Open makefile directory (corrected path)
-          cd /desktop
+          echo "=== Starting Build ==="
+          cd /workspace
           
-          # Clean and build
-          make clean
+          echo "=== Directory Structure ==="
+          ls -la
+          
+          echo "=== Checking Makefile ==="
+          if [ -f Makefile ]; then
+            echo "✓ Makefile found"
+          else
+            echo "✗ Makefile NOT found!"
+            exit 1
+          fi
+          
+          echo "=== Cleaning ==="
+          make clean || true
+          
+          echo "=== Building ==="
           make
-
-          # Verify build
-          echo "=== Build Output ==="
-          ls -la Release/
           
-          # Make dlls path
-          mkdir -p /desktop/publish/addons/logapi/dlls
-
-          # Copy release file
-          cp /desktop/Release/logapi_mm.so /desktop/publish/addons/logapi/dlls/logapi_mm.so
+          echo "=== Build Result ==="
+          ls -la Release/ || echo "Release folder not found!"
           
-          # Verify dependencies
-          echo "=== Library Dependencies ==="
-          ldd /desktop/publish/addons/logapi/dlls/logapi_mm.so || true
+          if [ -f Release/logapi_mm.so ]; then
+            echo "✓ logapi_mm.so generated successfully"
+            echo "=== Library Dependencies ==="
+            ldd Release/logapi_mm.so || true
+          else
+            echo "✗ logapi_mm.so NOT generated!"
+            exit 1
+          fi
+          
+          echo "=== Creating Publish Structure ==="
+          mkdir -p /workspace/publish/addons/logapi/dlls
+          cp Release/logapi_mm.so publish/addons/logapi/dlls/
+          
+          echo "=== Publish Contents ==="
+          ls -la publish/addons/logapi/dlls/
       run: docker exec build-container bash -c "$SCRIPT"
 
-    - name: Deploy artifacts
+    - name: Upload Linux Artifact
       uses: actions/upload-artifact@v4
+      if: always()
       with:
         name: linux32
         path: ${{github.workspace}}/publish
+        retention-days: 30
+        if-no-files-found: error
         
   windows:
     name: Windows Build
     runs-on: windows-latest
-  
     steps:
     - uses: actions/checkout@v4
 
     - name: Add MSBuild to PATH
       uses: microsoft/setup-msbuild@v2
 
-    - name: Execute Build
-      working-directory: ${{github.workspace}}
+    - name: Check Directory Structure
       run: |
-        # Open directory
-        cd LogApi
+        echo "=== Workspace Contents ==="
+        dir ${{github.workspace}}
+        echo "=== Looking for .vcxproj ==="
+        dir /s *.vcxproj
+      shell: cmd
 
-        # Make Release directory
-        mkdir -p Release
+    - name: Execute Build
+      run: |
+        # Find the .vcxproj file
+        $vcxproj = Get-ChildItem -Recurse -Filter "*.vcxproj" | Select-Object -First 1
+        if ($vcxproj) {
+          Write-Host "✓ Found: $($vcxproj.FullName)"
+          $projectDir = $vcxproj.DirectoryName
+        } else {
+          Write-Host "✗ No .vcxproj found!"
+          exit 1
+        }
+        
+        # Build
+        Write-Host "=== Building ==="
+        msbuild $vcxproj.FullName -property:Configuration=Release -nologo -verbosity:minimal
+        
+        # Find the output DLL
+        $dll = Get-ChildItem -Recurse -Filter "logapi_mm.dll" -ErrorAction SilentlyContinue | Select-Object -First 1
+        if ($dll) {
+          Write-Host "✓ Found: $($dll.FullName)"
+        } else {
+          Write-Host "✗ logapi_mm.dll NOT generated!"
+          exit 1
+        }
+        
+        # Create publish structure
+        Write-Host "=== Creating Publish Structure ==="
+        New-Item -ItemType Directory -Force -Path publish\addons\logapi\dlls | Out-Null
+        Copy-Item $dll.FullName publish\addons\logapi\dlls\ -Force
+        
+        # Show contents
+        Write-Host "=== Publish Contents ==="
+        Get-ChildItem -Recurse publish\
+      shell: pwsh
 
-        # Execute Build
-        msbuild LogApi.vcxproj -property:configuration=Release -nologo -verbosity:quiet -m
-
-        # Make publish directory
-        mkdir -p ..\cstrike\addons\logapi\dlls
-
-        # Copy cstrike files to publish
-        copy ..\cstrike\* publish -Recurse -Force
-
-        # Move released dll to publish
-        copy Release\*.dll ..\cstrike\addons\logapi\dlls -Recurse -Force
-
-    - name: Deploy artifacts
+    - name: Upload Windows Artifact
       uses: actions/upload-artifact@v4
+      if: always()
       with:
         name: win32
-        path: ${{github.workspace}}\publish
+        path: ${{github.workspace}}/publish
+        retention-days: 30
+        if-no-files-found: error
