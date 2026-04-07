@@ -39,35 +39,63 @@ jobs:
           # Update repository
           apt-get update > /dev/null
 
-          # Install build dependencies
-          apt-get install -qq -y pkg-config wget unzip build-essential gcc-multilib g++-multilib libgcc1:i386 libcurl4-openssl-dev:i386 zlib1g-dev:i386 libssl-dev:i386 > /dev/null
+          # Install build dependencies (without libcurl - we build it statically)
+          apt-get install -qq -y pkg-config wget unzip build-essential gcc-multilib g++-multilib \
+          libgcc1:i386 zlib1g-dev:i386 > /dev/null
+      run: docker exec build-container bash -c "$SCRIPT"
+
+    - name: Build libcurl 32-bit Static
+      env:
+        SCRIPT: |
+          cd /tmp
+          wget -q https://curl.se/download/curl-8.7.1.tar.gz
+          tar xf curl-8.7.1.tar.gz
+          cd curl-8.7.1
+          ./configure --host=i686-linux-gnu \
+            CFLAGS="-m32" LDFLAGS="-m32" \
+            --disable-gssapi \
+            --disable-kerberos5 \
+            --disable-ntlm \
+            --without-gssapi \
+            --without-ssl \
+            --disable-shared \
+            --enable-static \
+            --prefix=/usr/local/curl32 \
+            --silent
+          make -j$(nproc) --silent
+          make install --silent
       run: docker exec build-container bash -c "$SCRIPT"
 
     - name: Execute Build
       env:
         SCRIPT: |
-          # Open makefile directory
-          cd /desktop/LogApi
-
-          # Make Release Directory
-          mkdir -p Release
-
-          # Make linux (Without post build script)
+          # Open makefile directory (corrected path)
+          cd /desktop
+          
+          # Clean and build
+          make clean
           make
 
+          # Verify build
+          echo "=== Build Output ==="
+          ls -la Release/
+          
           # Make dlls path
-          mkdir -p ../cstrike/addons/logapi/dlls
+          mkdir -p /desktop/publish/addons/logapi/dlls
 
           # Copy release file
-          cp ./Release/logapi_mm.so ../cstrike/addons/logapi/dlls
-
+          cp /desktop/Release/logapi_mm.so /desktop/publish/addons/logapi/dlls/logapi_mm.so
+          
+          # Verify dependencies
+          echo "=== Library Dependencies ==="
+          ldd /desktop/publish/addons/logapi/dlls/logapi_mm.so || true
       run: docker exec build-container bash -c "$SCRIPT"
 
     - name: Deploy artifacts
       uses: actions/upload-artifact@v4
       with:
         name: linux32
-        path: ${{github.workspace}}/cstrike
+        path: ${{github.workspace}}/publish
         
   windows:
     name: Windows Build
@@ -104,4 +132,4 @@ jobs:
       uses: actions/upload-artifact@v4
       with:
         name: win32
-        path: ${{github.workspace}}/cstrike
+        path: ${{github.workspace}}\publish
