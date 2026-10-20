@@ -4,11 +4,15 @@ CLogCurl gLogCurl;
 
 void CLogCurl::ServerActivate() {
   if (!this->m_MultiHandle) {
-    this->m_RequestIndex = 0;
+    this->m_RequestIndex = 1;
 
     this->m_Data.clear();
 
-    curl_global_init(CURL_GLOBAL_ALL);
+    static bool GlobalInit = false;
+    if (!GlobalInit) {
+      curl_global_init(CURL_GLOBAL_ALL);
+      GlobalInit = true;
+    }
 
     this->m_MultiHandle = curl_multi_init();
   }
@@ -23,25 +27,25 @@ void CLogCurl::ServerFrame() {
 
     curl_multi_perform(this->m_MultiHandle, &HandleCount);
 
-    while (ProcessedThisFrame < 5 && (MsgInfo = curl_multi_info_read(
-                                          this->m_MultiHandle, &HandleCount))) {
+    while ((MsgInfo = curl_multi_info_read(this->m_MultiHandle, &HandleCount))) {
       if (MsgInfo->msg == CURLMSG_DONE) {
         char *pPrivate = nullptr;
-        curl_easy_getinfo(MsgInfo->easy_handle, CURLINFO_PRIVATE, &pPrivate);
-        long Index = (long)(intptr_t)pPrivate;
+        if (curl_easy_getinfo(MsgInfo->easy_handle, CURLINFO_PRIVATE, &pPrivate) == CURLE_OK && pPrivate) {
+          long Index = (long)(intptr_t)pPrivate;
 
-        if (this->m_Data.find(Index) != this->m_Data.end()) {
-          gLogApi.CallbackResult(MsgInfo->easy_handle, this->m_Data[Index].Size,
-                                 this->m_Data[Index].Memory,
-                                 this->m_Data[Index].EventIndex);
+          if (this->m_Data.find(Index) != this->m_Data.end()) {
+            gLogApi.CallbackResult(MsgInfo->easy_handle, this->m_Data[Index].Size,
+                                   this->m_Data[Index].Memory,
+                                   this->m_Data[Index].EventIndex);
 
-          free(this->m_Data[Index].Memory);
+            free(this->m_Data[Index].Memory);
 
-          if (this->m_Data[Index].Headers) {
-            curl_slist_free_all(this->m_Data[Index].Headers);
+            if (this->m_Data[Index].Headers) {
+              curl_slist_free_all(this->m_Data[Index].Headers);
+            }
+
+            this->m_Data.erase(Index);
           }
-
-          this->m_Data.erase(Index);
         }
 
         curl_multi_remove_handle(this->m_MultiHandle, MsgInfo->easy_handle);
@@ -99,6 +103,8 @@ void CLogCurl::PostJSON(const char *url, long Timeout, std::string BearerToken,
         curl_easy_setopt(ch, CURLOPT_SSL_VERIFYPEER, 1L);
         curl_easy_setopt(ch, CURLOPT_SSL_VERIFYHOST, 2L);
 
+        curl_easy_setopt(ch, CURLOPT_NOSIGNAL, 1L);
+
         curl_easy_setopt(ch, CURLOPT_WRITEDATA,
                          (void *)&this->m_Data[this->m_RequestIndex]);
 
@@ -137,6 +143,9 @@ size_t CLogCurl::WriteMemoryCallback(void *contents, size_t size, size_t nmemb,
           mem->Memory[mem->Size] = 0;
 
           return realsize;
+        } else {
+            // Log memory error
+            LOG_CONSOLE(PLID, "[%s] Memory allocation failed!", __func__);
         }
       }
     }

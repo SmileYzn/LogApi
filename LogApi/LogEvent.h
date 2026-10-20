@@ -35,7 +35,7 @@ public:
 	void ClientSay(edict_t* pEdict);
 	void ClientMenuHandle(edict_t* pEdict, std::string Callback, P_MENU_ITEM Item);
 
-	nlohmann::ordered_json m_Event;
+
 };
 
 extern CLogEvent gLogEvent;

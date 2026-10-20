@@ -187,8 +187,6 @@ void CLogCommand::OpenMotd() {
 // Send Server Information
 void CLogCommand::ServerInfo() {
   gLogEvent.ServerInfo();
-
-  LOG_CONSOLE(PLID, "[%s] Server info sent to webserver.", Plugin_info.logtag);
 }
 
 // Get Hudmessage Parameters

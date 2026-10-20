@@ -19,34 +19,34 @@ public:
 	int EventEnabled(const char* EventName);
 
 	// Send Event
-	void SendEvent(int EventIndex, nlohmann::ordered_json EventData);
+	void SendEvent(int EventIndex, const nlohmann::ordered_json& EventData);
 
 	// Callback Result
 	void CallbackResult(CURL* ch, size_t Size, const char* Memory, int EventIndex);
 
 	// Parse Event Result
-	void EventResult(int EventIndex, nlohmann::ordered_json Result);
+	void EventResult(int EventIndex, const nlohmann::ordered_json& Result);
 
 	// Server Command
-	void ServerCommand(int EventIndex, nlohmann::ordered_json Data);
+	void ServerCommand(int EventIndex, const nlohmann::ordered_json& Data);
 
 	// Show Menu
-	void ShowMenu(int EventIndex, nlohmann::ordered_json Data);
+	void ShowMenu(int EventIndex, const nlohmann::ordered_json& Data);
 
 	// Open Menu
-	void Menu(int EntityIndex, std::string Title, bool Exit, std::string Callback, nlohmann::ordered_json Items);
+	void Menu(int EntityIndex, std::string Title, bool Exit, std::string Callback, const nlohmann::ordered_json& Items);
 
 	// Menu Handle
 	static void MenuHandle(int EntityIndex, std::string Callback, P_MENU_ITEM Item);
 
 	// Print to client from result
-	void ClientPrint(int EventIndex, nlohmann::ordered_json Data);
+	void ClientPrint(int EventIndex, const nlohmann::ordered_json& Data);
 
 	// Server Say Text
-	void PrintChat(int EventIndex, nlohmann::ordered_json Data);
+	void PrintChat(int EventIndex, const nlohmann::ordered_json& Data);
 
 	// HUD Message Text
-	void ShowHudMessage(int EventIndex, nlohmann::ordered_json Data);
+	void ShowHudMessage(int EventIndex, const nlohmann::ordered_json& Data);
 
 	// Get Server info
 	nlohmann::ordered_json GetServerInfo();

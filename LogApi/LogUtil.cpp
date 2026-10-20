@@ -4,8 +4,9 @@ CLogUtil gLogUtil;
 
 void CLogUtil::ServerExecute(std::string Command) {
   if (!Command.empty()) {
-    Command += "\n";
-    g_engfuncs.pfnServerCommand(const_cast<char *>(Command.c_str()));
+    char Buffer[1024];
+    Q_strncpy(Buffer, Command.c_str(), sizeof(Buffer));
+    g_engfuncs.pfnServerCommand(Buffer);
   }
 }
 
@@ -26,9 +27,11 @@ void CLogUtil::ClientPrint(edict_t *pEntity, int msg_dest, const char *Format,
       Length = 125;
     }
 
-    Buffer[Length++] = '\n';
-    Buffer[Length++] = '\n';
-    Buffer[Length] = 0;
+    if (Length < (int)sizeof(Buffer) - 3) {
+      Buffer[Length++] = '\n';
+      Buffer[Length++] = '\n';
+      Buffer[Length] = 0;
+    }
   }
 
   static int iMsgTextMsg;
@@ -202,16 +205,20 @@ CBasePlayer *CLogUtil::FindPlayer(std::string Target) {
 
           if (Player) {
             if (!Player->IsDormant()) {
-              std::string Name = STRING(Player->edict()->v.netname);
+              if (Player->edict()) {
+                if (Player->edict()->v.netname) {
+                  std::string Name = STRING(Player->edict()->v.netname);
 
-              if (!Name.empty()) {
-                std::transform(Name.begin(), Name.end(), Name.begin(),
-                               [](unsigned char character) {
-                                 return std::tolower(character);
-                               });
+                  if (!Name.empty()) {
+                    std::transform(Name.begin(), Name.end(), Name.begin(),
+                                   [](unsigned char character) {
+                                     return std::tolower(character);
+                                   });
 
-                if (Name.find(Target) != std::string::npos) {
-                  return Player;
+                    if (Name.find(Target) != std::string::npos) {
+                      return Player;
+                    }
+                  }
                 }
               }
             }
@@ -315,6 +322,10 @@ void CLogUtil::HudMessage(edict_t *pEntity, hudtextparms_t textparms,
 }
 
 void CLogUtil::ShowMotd(edict_t *pEntity, char *Motd, int MotdLength) {
+  if (!Motd || Motd[0u] == '\0') {
+    return;
+  }
+
   static int iMsgMOTD;
 
   if (iMsgMOTD ||
@@ -376,7 +387,8 @@ const char *CLogUtil::GetAuthId(edict_t *pEntity) {
     if (Auth) {
       if (Auth[0u] != '\0') {
         if (!Q_stricmp(Auth, "BOT")) {
-          return STRING(pEntity->v.netname);
+          auto NetName = STRING(pEntity->v.netname);
+          return NetName ? NetName : "BOT";
         }
 
         return Auth;

@@ -33,14 +33,16 @@ void CLogApi::ServerActivate() {
       // Set file pointer to start of file
       fseek(fp, 0, SEEK_SET);
 
-      // Create empty std::string with file size
-      std::string buffer(fs, '\0');
-
-      // Read file to std::string buffer
-      size_t elements = fread(&buffer[0], 1, fs, fp);
-
       // If read something
-      if (elements > 0) {
+      if (fs > 0) {
+        // Create empty std::string with file size
+        std::string buffer(fs, '\0');
+
+        // Read file to std::string buffer
+        size_t elements = fread(&buffer[0], 1, fs, fp);
+
+        // If read something
+        if (elements > 0) {
         // Read data
         auto json = nlohmann::ordered_json::parse(buffer, nullptr, true, true);
 
@@ -51,18 +53,20 @@ void CLogApi::ServerActivate() {
               std::make_pair(event.key(), event.value().get<bool>()));
         }
       }
+    }
 
-      // Close file pointer
-      fclose(fp);
+    // Close file pointer
+    fclose(fp);
     } else {
       // Failed on error
       LOG_CONSOLE(PLID, "[%s] Failed to open file: %s", __func__,
                   LOG_API_FILE_EVENTS);
     }
-  } catch (const nlohmann::ordered_json::parse_error &e) {
-    // JSON exeption errors
-    LOG_CONSOLE(PLID, "[%s] %s", __func__, e.what());
+  } catch (const std::exception &e) {
+    // JSON or other exception errors
+    LOG_CONSOLE(PLID, "[%s] Exception: %s", __func__, e.what());
   }
+
 }
 
 // On server deactivate
@@ -125,7 +129,7 @@ int CLogApi::EventEnabled(const char *EventName) {
 }
 
 // Send event
-void CLogApi::SendEvent(int EventIndex, nlohmann::ordered_json Event) {
+void CLogApi::SendEvent(int EventIndex, const nlohmann::ordered_json& Event) {
   // Is Running
   if (this->m_Running) {
     // If address is set
@@ -139,12 +143,21 @@ void CLogApi::SendEvent(int EventIndex, nlohmann::ordered_json Event) {
             // If JSON is not empty
             if (!Event.empty()) {
               if (gLogCvar.m_Timeout) {
-                if (gLogCvar.m_Bearer) {
-                  // POST to webserver
-                  gLogCurl.PostJSON(gLogCvar.m_Address->string,
-                                    (long)gLogCvar.m_Timeout->value,
-                                    gLogCvar.m_Bearer->string, Event.dump(),
-                                    EventIndex);
+                if (gLogCvar.m_Bearer && gLogCvar.m_Bearer->string) {
+                  try {
+                    // POST to webserver
+                    // Use error_handler_t::replace to avoid crashes on invalid UTF-8
+                    gLogCurl.PostJSON(
+                        gLogCvar.m_Address->string,
+                        (long)gLogCvar.m_Timeout->value,
+                        gLogCvar.m_Bearer->string,
+                        Event.dump(-1, ' ', false,
+                                   nlohmann::ordered_json::error_handler_t::replace),
+                        EventIndex);
+                  } catch (const std::exception &e) {
+                    LOG_CONSOLE(PLID, "[%s] JSON Serialization error: %s",
+                                __func__, e.what());
+                  }
                 }
               }
             }
@@ -184,9 +197,9 @@ void CLogApi::CallbackResult(CURL *ch, size_t Size, const char *Memory,
                   gLogApi.EventResult(EventIndex, Result);
                 }
               }
-            } catch (const nlohmann::ordered_json::parse_error &e) {
+            } catch (const std::exception &e) {
               // Log
-              LOG_CONSOLE(PLID, "[%s] %s", __func__, e.what());
+              LOG_CONSOLE(PLID, "[%s] Exception: %s", __func__, e.what());
             }
           }
         }
@@ -202,7 +215,7 @@ void CLogApi::CallbackResult(CURL *ch, size_t Size, const char *Memory,
 }
 
 // Parse event result
-void CLogApi::EventResult(int EventIndex, nlohmann::ordered_json Data) {
+void CLogApi::EventResult(int EventIndex, const nlohmann::ordered_json& Data) {
   // Check if has event 'ServerCommand' result from api
   if (Data.contains("ServerCommand")) {
     this->ServerCommand(EventIndex, Data);
@@ -230,7 +243,7 @@ void CLogApi::EventResult(int EventIndex, nlohmann::ordered_json Data) {
 }
 
 // Execute server command from result
-void CLogApi::ServerCommand(int EventIndex, nlohmann::ordered_json Data) {
+void CLogApi::ServerCommand(int EventIndex, const nlohmann::ordered_json& Data) {
   if (gLogCvar.m_ExecCommands) {
     if (gLogCvar.m_ExecCommands->value <= 0.0f) {
       return;
@@ -280,7 +293,7 @@ void CLogApi::ServerCommand(int EventIndex, nlohmann::ordered_json Data) {
 }
 
 // Open menu from result
-void CLogApi::ShowMenu(int EventIndex, nlohmann::ordered_json Data) {
+void CLogApi::ShowMenu(int EventIndex, const nlohmann::ordered_json& Data) {
   if (!Data[__func__].empty()) {
     if (Data[__func__].is_object()) {
       if (!Data[__func__]["Items"].empty()) {
@@ -320,8 +333,6 @@ void CLogApi::ShowMenu(int EventIndex, nlohmann::ordered_json Data) {
           } catch (const nlohmann::ordered_json::exception &e) {
             LOG_CONSOLE(PLID, "[%s] %s", __func__, e.what());
           }
-        } else {
-          LOG_CONSOLE(PLID, "[%s] Menu is empty", __func__);
         }
       }
     }
@@ -330,7 +341,7 @@ void CLogApi::ShowMenu(int EventIndex, nlohmann::ordered_json Data) {
 
 // Open menu function
 void CLogApi::Menu(int EntityIndex, std::string Title, bool Exit,
-                   std::string Callback, nlohmann::ordered_json Items) {
+                   std::string Callback, const nlohmann::ordered_json& Items) {
   auto Player = UTIL_PlayerByIndexSafe(EntityIndex);
 
   if (Player) {
@@ -369,7 +380,7 @@ void CLogApi::MenuHandle(int EntityIndex, std::string Callback,
 }
 
 // Print to client from result
-void CLogApi::ClientPrint(int EventIndex, nlohmann::ordered_json Data) {
+void CLogApi::ClientPrint(int EventIndex, const nlohmann::ordered_json& Data) {
   // If is not empty
   if (!Data[__func__].empty()) {
     try {
@@ -393,8 +404,10 @@ void CLogApi::ClientPrint(int EventIndex, nlohmann::ordered_json Data) {
           // If has entity index
           if (EntityId > 0) {
             // Get entity pointer
-            pEntity =
-                !FNullEnt(INDEXENT(EntityId)) ? INDEXENT(EntityId) : nullptr;
+            auto Player = UTIL_PlayerByIndexSafe(EntityId);
+            if (Player) {
+              pEntity = Player->edict();
+            }
           }
 
           // If is not empty
@@ -411,7 +424,7 @@ void CLogApi::ClientPrint(int EventIndex, nlohmann::ordered_json Data) {
 }
 
 // Print to player chat from result
-void CLogApi::PrintChat(int EventIndex, nlohmann::ordered_json Data) {
+void CLogApi::PrintChat(int EventIndex, const nlohmann::ordered_json& Data) {
   // If is not empty
   if (!Data[__func__].empty()) {
     try {
@@ -431,8 +444,10 @@ void CLogApi::PrintChat(int EventIndex, nlohmann::ordered_json Data) {
           // If has entity index
           if (EntityId > 0) {
             // Get entity pointer
-            pEntity =
-                !FNullEnt(INDEXENT(EntityId)) ? INDEXENT(EntityId) : nullptr;
+            auto Player = UTIL_PlayerByIndexSafe(EntityId);
+            if (Player) {
+              pEntity = Player->edict();
+            }
           }
 
           // If is not empty
@@ -449,7 +464,7 @@ void CLogApi::PrintChat(int EventIndex, nlohmann::ordered_json Data) {
 }
 
 // Print to hudmessage chat from result
-void CLogApi::ShowHudMessage(int EventIndex, nlohmann::ordered_json Data) {
+void CLogApi::ShowHudMessage(int EventIndex, const nlohmann::ordered_json& Data) {
   // If is not empty
   if (!Data[__func__].empty()) {
     try {
@@ -473,8 +488,10 @@ void CLogApi::ShowHudMessage(int EventIndex, nlohmann::ordered_json Data) {
           // If has entity index
           if (EntityId > 0) {
             // Get entity pointer
-            pEntity =
-                !FNullEnt(INDEXENT(EntityId)) ? INDEXENT(EntityId) : nullptr;
+            auto Player = UTIL_PlayerByIndexSafe(EntityId);
+            if (Player) {
+              pEntity = Player->edict();
+            }
           }
 
           // If is not empty
@@ -497,25 +514,29 @@ nlohmann::ordered_json CLogApi::GetServerInfo() {
   nlohmann::ordered_json ServerInfo;
 
   // Set address
-  ServerInfo["Address"] = g_engfuncs.pfnCVarGetString("net_address");
+  auto NetAddress = g_engfuncs.pfnCVarGetString("net_address");
+  ServerInfo["Address"] = NetAddress ? NetAddress : "";
 
   // Set hostname
-  ServerInfo["Hostname"] = g_engfuncs.pfnCVarGetString("hostname");
+  auto Hostname = g_engfuncs.pfnCVarGetString("hostname");
+  ServerInfo["Hostname"] = Hostname ? Hostname : "";
 
   // Set map name
-  ServerInfo["Map"] = STRING(gpGlobals->mapname);
+  auto MapName = STRING(gpGlobals->mapname);
+  ServerInfo["Map"] = MapName ? MapName : "";
 
   // Set game
   ServerInfo["Game"] = "Counter-Strike";
 
   // If CSGameRules is not null
   if (g_pGameRules) {
+    auto Rules = CSGameRules();
     // If server has game description
-    if (CSGameRules()->m_GameDesc) {
+    if (Rules && Rules->m_GameDesc) {
       // If is not empty
-      if (CSGameRules()->m_GameDesc[0u] != '\0') {
+      if (Rules->m_GameDesc[0u] != '\0') {
         // Set game description name
-        ServerInfo["Game"] = CSGameRules()->m_GameDesc;
+        ServerInfo["Game"] = Rules->m_GameDesc;
       }
     }
   }

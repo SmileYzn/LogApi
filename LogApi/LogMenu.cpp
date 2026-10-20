@@ -231,31 +231,28 @@ void CLogMenu::ShowMenu(int EntityIndex, int Slots, int Time, std::string Text)
 					gLogUtil.ReplaceAll(Text, "^R", "\\R");
 					gLogUtil.ReplaceAll(Text, "^n", "\n");
 
-					char BufferMenu[MAX_BUFFER_MENU * 6] = { 0 };
+					char BufferMenu[MAX_BUFFER_MENU * 6 + 1] = { 0 };
 
-					Text.copy(BufferMenu, Text.length() + 1);
+					auto CopySize = std::min(Text.length(), (size_t)(MAX_BUFFER_MENU * 6));
+					Text.copy(BufferMenu, CopySize);
+					BufferMenu[CopySize] = '\0';
 
 					char* pMenuList = BufferMenu;
-					char* aMenuList = BufferMenu;
-
-					int iCharCount = 0;
 
 					while (pMenuList && *pMenuList)
 					{
 						char szChunk[MAX_BUFFER_MENU + 1] = { 0 };
 
 						strncpy(szChunk, pMenuList, MAX_BUFFER_MENU);
+						szChunk[MAX_BUFFER_MENU] = '\0';
 
-						szChunk[MAX_BUFFER_MENU] = 0;
-
-						iCharCount += strlen(szChunk);
-
-						pMenuList = aMenuList + iCharCount;
+						int ChunkLen = strlen(szChunk);
+						pMenuList += ChunkLen;
 
 						g_engfuncs.pfnMessageBegin(MSG_ONE, iMsgShowMenu, nullptr, Player->edict());
 						g_engfuncs.pfnWriteShort(Slots);
 						g_engfuncs.pfnWriteChar(Time);
-						g_engfuncs.pfnWriteByte(*pMenuList ? TRUE : FALSE);
+						g_engfuncs.pfnWriteByte((pMenuList && *pMenuList) ? TRUE : FALSE);
 						g_engfuncs.pfnWriteString(szChunk);
 						g_engfuncs.pfnMessageEnd();
 					}
